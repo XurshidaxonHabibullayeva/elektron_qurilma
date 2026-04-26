@@ -11,8 +11,10 @@ import StudentDashboardPage from '@/pages/StudentDashboardPage'
 import StudentResultsPage from '@/pages/StudentResultsPage'
 import { HomeRedirect } from '@/pages/HomeRedirect'
 import LessonPage from '@/pages/LessonPage'
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
+import UpdatePasswordPage from '@/pages/UpdatePasswordPage'
 import TeacherDashboardPage from '@/pages/TeacherDashboardPage'
 import TeacherQuizPage from '@/pages/TeacherQuizPage'
 import TeacherResultsPage from '@/pages/TeacherResultsPage'
@@ -28,7 +30,11 @@ export default function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         </Route>
+      </Route>
+      <Route element={<AuthLayout />}>
+        <Route path="/auth/update-password" element={<UpdatePasswordPage />} />
       </Route>
       <Route element={<ProtectedLayout />}>
         <Route element={<RoleGuardLayout allowed={['admin']} />}>

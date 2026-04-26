@@ -8,6 +8,7 @@ import { useToggle } from '@/hooks/useToggle'
 import { loadOrCreateProfile } from '@/services/profile.service'
 import { supabase } from '@/services/supabase'
 import { roleHomePath } from '@/utils/rolePaths'
+import { translateAppError } from '@/utils/supabaseAuthErrors'
 import { cn } from '@/utils/cn'
 
 export default function RegisterPage() {
@@ -23,8 +24,8 @@ export default function RegisterPage() {
     setError(null)
     setInfo(null)
     const form = new FormData(e.currentTarget)
-    const name = String(form.get('name') ?? '')
-    const email = String(form.get('email') ?? '')
+    const name = String(form.get('name') ?? '').trim()
+    const email = String(form.get('email') ?? '').trim()
     const password = String(form.get('password') ?? '')
     setLoading(true)
     try {
@@ -43,7 +44,8 @@ export default function RegisterPage() {
         )
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi')
+      const msg = err instanceof Error ? err.message : 'Xatolik yuz berdi'
+      setError(translateAppError(msg))
     } finally {
       setLoading(false)
     }

@@ -1,9 +1,33 @@
+import type { PostgrestError } from '@supabase/supabase-js'
 import type { ProfileRow, UserRole } from '@/types'
 import { USER_ROLES } from '@/types'
 import { supabase } from '@/services/supabase'
 
 function normalizeRole(role: string): UserRole {
   return USER_ROLES.includes(role as UserRole) ? (role as UserRole) : 'student'
+}
+
+function isMissingTableError(err: PostgrestError): boolean {
+  return (
+    err.code === 'PGRST205' ||
+    err.message.toLowerCase().includes('could not find the table') ||
+    err.message.toLowerCase().includes('schema cache')
+  )
+}
+
+function profileTableMissingMessage(): string {
+  return (
+    'public.profiles jadvali bu Supabase loyihasida topilmadi (HTTP 404 / PGRST205). ' +
+    'Loyiha ildizidagi supabase/migrations SQL fayllarini Dashboard → SQL Editor’da sanadan boshlab ketma-ket bajaring, ' +
+    "yoki CLI: supabase link && supabase db push. Keyin sahifani yangilang."
+  )
+}
+
+function throwProfileError(err: PostgrestError): never {
+  if (isMissingTableError(err)) {
+    throw new Error(profileTableMissingMessage())
+  }
+  throw new Error(err.message)
 }
 
 export async function loadOrCreateProfile(userId: string): Promise<ProfileRow> {
@@ -14,7 +38,7 @@ export async function loadOrCreateProfile(userId: string): Promise<ProfileRow> {
     .maybeSingle()
 
   if (error) {
-    throw new Error(error.message)
+    throwProfileError(error)
   }
 
   if (row) {
@@ -46,7 +70,7 @@ export async function loadOrCreateProfile(userId: string): Promise<ProfileRow> {
     if (insErr.code === '23505') {
       return loadOrCreateProfile(userId)
     }
-    throw new Error(insErr.message)
+    throwProfileError(insErr)
   }
 
   return {

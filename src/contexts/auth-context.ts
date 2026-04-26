@@ -17,6 +17,8 @@ export type AuthContextValue = {
     name: string,
   ) => Promise<{ sessionCreated: boolean }>
   signOut: () => Promise<void>
+  /** Parolni tiklash xati; redirect URL loyiha + /auth/update-password bo‘lishi kerak. */
+  resetPasswordForEmail: (email: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

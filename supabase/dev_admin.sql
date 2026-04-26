@@ -1,3 +1,6 @@
+-- Avvalo jadvalar bo‘lmasa: supabase/REMOTE_SETUP.sql ni Dashboard SQL Editor’da ishga tushiring.
+-- Admin «o‘quvchini sinfga biriktirish» ishlamasa: 20260426120000_admin_student_class.sql ni qo‘shing.
+--
 -- =============================================================================
 -- DOIMIY DEMO ADMIN (bir marta sozlash)
 -- =============================================================================
@@ -29,3 +32,10 @@ where id = (
 );
 
 -- Agar «0 rows» bo‘lsa: avval Auth’da shu email bilan foydalanuvchi yaratilganini tekshiring.
+--
+-- KIRISHDA 400 XATOSI BO‘LSA (brauzer Network → token javobi):
+-- • Authentication → Users: foydalanuvchi bor-yo‘qligi, «Confirmed» ustuni.
+-- • Email tasdiqlash yoqilgan bo‘lsa, pochta orqali tasdiqlang yoki foydalanuvchini qo‘lda
+--   «Confirm user» qiling; yoki Authentication → Providers → Email → «Confirm email» ni
+--   sinov uchun o‘chirib qo‘ying.
+-- • .env.local dagi VITE_SUPABASE_URL va VITE_SUPABASE_ANON_KEY shu loyiha (API) bilan mosligi.

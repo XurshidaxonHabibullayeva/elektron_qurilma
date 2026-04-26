@@ -10,6 +10,7 @@ import { AuthContext, type AuthContextValue } from '@/contexts/auth-context'
 import { loadOrCreateProfile } from '@/services/profile.service'
 import { supabase } from '@/services/supabase'
 import type { ProfileRow } from '@/types'
+import { translateAuthError } from '@/utils/supabaseAuthErrors'
 
 type ProfileGate = 'none' | 'loading' | 'ready' | 'error'
 
@@ -77,23 +78,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user?.id])
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const trimmedEmail = email.trim()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    })
     if (error) {
-      throw new Error(error.message)
+      throw new Error(translateAuthError(error.message))
     }
   }, [])
 
   const signUp = useCallback(
     async (email: string, password: string, name: string) => {
+      const trimmedEmail = email.trim()
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password,
         options: {
           data: { full_name: name.trim() },
         },
       })
       if (error) {
-        throw new Error(error.message)
+        throw new Error(translateAuthError(error.message))
       }
       return { sessionCreated: !!data.session }
     },
@@ -103,7 +109,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut()
     if (error) {
-      throw new Error(error.message)
+      throw new Error(translateAuthError(error.message))
+    }
+  }, [])
+
+  const resetPasswordForEmail = useCallback(async (email: string) => {
+    const trimmedEmail = email.trim()
+    const redirectTo = `${window.location.origin}/auth/update-password`
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+      redirectTo,
+    })
+    if (error) {
+      throw new Error(translateAuthError(error.message))
     }
   }, [])
 
@@ -121,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signOut,
+      resetPasswordForEmail,
     }),
     [
       session,
@@ -130,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signOut,
+      resetPasswordForEmail,
     ],
   )
 

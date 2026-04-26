@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
@@ -7,6 +7,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { loadOrCreateProfile } from '@/services/profile.service'
 import { supabase } from '@/services/supabase'
 import { pathAllowedForRole, roleHomePath } from '@/utils/rolePaths'
+import { clearLoginFlash, peekLoginFlash } from '@/utils/loginFlash'
+import { translateAppError } from '@/utils/supabaseAuthErrors'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -16,21 +18,31 @@ export default function LoginPage() {
     (location.state as { from?: string } | null)?.from?.trim() || ''
 
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(() => peekLoginFlash())
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (info) {
+      clearLoginFlash()
+    }
+  }, [info])
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     const form = new FormData(e.currentTarget)
-    const email = String(form.get('email') ?? '')
+    const email = String(form.get('email') ?? '').trim()
     const password = String(form.get('password') ?? '')
+    setInfo(null)
     setLoading(true)
     try {
       await signIn(email, password)
       const { data: sessionData, error: sessionErr } =
         await supabase.auth.getSession()
       if (sessionErr || !sessionData.session?.user) {
-        throw new Error(sessionErr?.message ?? 'Kirishdan keyin sessiya topilmadi')
+        throw new Error(
+          translateAppError(sessionErr?.message ?? 'Kirishdan keyin sessiya topilmadi'),
+        )
       }
       const profile = await loadOrCreateProfile(sessionData.session.user.id)
       const target =
@@ -39,7 +51,8 @@ export default function LoginPage() {
           : roleHomePath(profile.role)
       navigate(target, { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi')
+      const msg = err instanceof Error ? err.message : 'Xatolik yuz berdi'
+      setError(translateAppError(msg))
     } finally {
       setLoading(false)
     }
@@ -74,12 +87,28 @@ export default function LoginPage() {
           placeholder="••••••••"
           required
         />
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-xs font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline dark:text-slate-400 dark:hover:text-white"
+          >
+            Parolni unutdingizmi?
+          </Link>
+        </div>
         {error ? (
           <p
             className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200"
             role="alert"
           >
             {error}
+          </p>
+        ) : null}
+        {info ? (
+          <p
+            className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-100"
+            role="status"
+          >
+            {info}
           </p>
         ) : null}
         <Button type="submit" className="w-full" disabled={loading}>

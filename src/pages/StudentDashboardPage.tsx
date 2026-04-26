@@ -113,9 +113,16 @@ export default function StudentDashboardPage() {
           }
         />
         <Card className="border-amber-200 bg-amber-50/50 p-6 text-sm text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
-          Namuna SQL (UUIDlarni almashtiring):{' '}
-          <code className="mt-2 block whitespace-pre-wrap rounded-xl bg-white/80 p-3 font-mono text-xs text-slate-800 shadow-inner dark:bg-slate-900/80 dark:text-slate-200">
-            {`update public.profiles\nset class_id = '<CLASS_UUID>'\nwhere id = auth.uid();`}
+          <p className="mb-3">
+            <strong>Admin panel:</strong> administrator sifatida kirganingizda «Sinflar va fanlar»
+            sahifasida pastda <strong>«O‘quvchilarni sinfga biriktirish»</strong> jadvalidan sinf
+            tanlang va <strong>Saqlash</strong> ni bosing.
+          </p>
+          <p className="mb-2 text-xs text-amber-900/90 dark:text-amber-200/90">
+            SQL Editor (Dashboard) uchun namuna — email va sinf UUID sini almashtiring:
+          </p>
+          <code className="mt-1 block whitespace-pre-wrap rounded-xl bg-white/80 p-3 font-mono text-xs text-slate-800 shadow-inner dark:bg-slate-900/80 dark:text-slate-200">
+            {`update public.profiles\nset class_id = '<SINF_UUID>'\nwhere id = (\n  select id from auth.users\n  where lower(email) = lower('oquvchi@email.com')\n  limit 1\n);`}
           </code>
         </Card>
       </div>
