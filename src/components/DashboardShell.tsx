@@ -5,8 +5,7 @@ import {
   ChevronRight, 
   LogOut, 
   Menu, 
-  X,
-  User
+  X
 } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -55,7 +54,6 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
   const a = ACCENT[accent]
 
   const fullName = profile?.full_name?.trim() || (typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null)
-  const label = fullName || user?.email
 
   useEffect(() => {
     setSidebarOpen(false)

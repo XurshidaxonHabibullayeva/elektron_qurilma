@@ -21,7 +21,7 @@ function formatWhen(iso: string): string {
 }
 
 export default function TeacherLessonsPage() {
-  const { user } = useAuth()
+  const { } = useAuth()
   const [classes, setClasses] = useState<ClassRow[]>([])
   const [subjects, setSubjects] = useState<SubjectRow[]>([])
   const [lessons, setLessons] = useState<TeacherLessonRow[]>([])
