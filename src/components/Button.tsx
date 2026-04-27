@@ -34,7 +34,8 @@ export function Button<T extends ElementType = 'button'>({
   ...props
 }: ButtonProps<T>) {
   const Component = as || 'button'
-  
+
+
   return (
     <Component
       className={cn(
