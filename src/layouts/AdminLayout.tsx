@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { Shield, BookOpen } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 
 export function AdminLayout() {
@@ -7,8 +8,8 @@ export function AdminLayout() {
       brand={{ title: 'Administrator', to: '/admin' }}
       accent="violet"
       nav={[
-        { to: '/admin', label: 'Bosh sahifa', end: true },
-        { to: '/guide', label: "Yo'riqnoma" },
+        { to: '/admin', label: 'Bosh sahifa', icon: <Shield className="size-5" />, end: true },
+        { to: '/guide', label: "Yo'riqnoma", icon: <BookOpen className="size-5" /> },
       ]}
     >
       <Outlet />

@@ -84,6 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
     })
     if (error) {
+      if (import.meta.env.DEV) {
+        console.warn('[supabase auth]', error.message, {
+          code: (error as { code?: string }).code,
+          status: (error as { status?: number }).status,
+        })
+      }
       throw new Error(translateAuthError(error.message))
     }
   }, [])

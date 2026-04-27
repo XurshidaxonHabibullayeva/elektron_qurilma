@@ -9,7 +9,12 @@ export type CreateLessonInput = {
   description: string | null
   videoUrl: string | null
   materialUrl: string | null
+  quarter: number | null
 }
+
+
+export type UpdateLessonInput = Partial<Omit<CreateLessonInput, 'teacherId'>> & { id: string }
+
 
 export async function fetchOwnedLesson(
   lessonId: string,
@@ -18,8 +23,9 @@ export async function fetchOwnedLesson(
   const { data, error } = await supabase
     .from('lessons')
     .select(
-      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, created_at, updated_at',
+      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, quarter, created_at, updated_at',
     )
+
     .eq('id', lessonId)
     .eq('teacher_id', teacherId)
     .maybeSingle()
@@ -34,8 +40,9 @@ export async function fetchMyLessons(): Promise<TeacherLessonRow[]> {
   const { data, error } = await supabase
     .from('lessons')
     .select(
-      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, created_at, updated_at',
+      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, quarter, created_at, updated_at',
     )
+
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -61,14 +68,17 @@ export async function createLesson(input: CreateLessonInput): Promise<TeacherLes
     description: input.description?.trim() || null,
     video_url: input.videoUrl?.trim() || null,
     material_url: input.materialUrl?.trim() || null,
+    quarter: input.quarter,
   }
+
 
   const { data, error } = await supabase
     .from('lessons')
     .insert(row)
     .select(
-      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, created_at, updated_at',
+      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, quarter, created_at, updated_at',
     )
+
     .single()
 
   if (error) {
@@ -76,3 +86,44 @@ export async function createLesson(input: CreateLessonInput): Promise<TeacherLes
   }
   return data as TeacherLessonRow
 }
+
+export async function updateLesson(input: UpdateLessonInput): Promise<TeacherLessonRow> {
+  const { id, ...rest } = input
+  const updateData: Record<string, any> = {}
+
+  if (rest.title !== undefined) updateData.title = rest.title.trim()
+  if (rest.classId !== undefined) updateData.class_id = rest.classId
+  if (rest.subjectId !== undefined) updateData.subject_id = rest.subjectId
+  if (rest.description !== undefined) updateData.description = rest.description?.trim() || null
+  if (rest.videoUrl !== undefined) updateData.video_url = rest.videoUrl?.trim() || null
+  if (rest.materialUrl !== undefined) updateData.material_url = rest.materialUrl?.trim() || null
+  if (rest.quarter !== undefined) updateData.quarter = rest.quarter
+
+
+  if (Object.keys(updateData).length === 0) {
+    throw new Error('Hech qanday o‘zgarish kiritilmadi')
+  }
+
+  const { data, error } = await supabase
+    .from('lessons')
+    .update(updateData)
+    .eq('id', id)
+    .select(
+      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, quarter, created_at, updated_at',
+    )
+
+    .single()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+  return data as TeacherLessonRow
+}
+
+export async function deleteLesson(lessonId: string): Promise<void> {
+  const { error } = await supabase.from('lessons').delete().eq('id', lessonId)
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+

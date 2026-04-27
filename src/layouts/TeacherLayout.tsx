@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { Home, Video, BarChart2, BookOpen } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 
 export function TeacherLayout() {
@@ -7,9 +8,10 @@ export function TeacherLayout() {
       brand={{ title: "O'qituvchi", to: '/teacher' }}
       accent="teal"
       nav={[
-        { to: '/teacher', label: 'Bosh sahifa', end: true },
-        { to: '/teacher/results', label: 'Natijalar' },
-        { to: '/guide', label: "Yo'riqnoma" },
+        { to: '/teacher', label: 'Bosh sahifa', icon: <Home className="size-5" />, end: true },
+        { to: '/teacher/lessons', label: 'Mening darslarim', icon: <Video className="size-5" /> },
+        { to: '/teacher/results', label: 'Natijalar', icon: <BarChart2 className="size-5" /> },
+        { to: '/guide', label: "Yo'riqnoma", icon: <BookOpen className="size-5" /> },
       ]}
     >
       <Outlet />

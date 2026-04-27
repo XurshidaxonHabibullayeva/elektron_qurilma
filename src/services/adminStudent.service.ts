@@ -1,23 +1,26 @@
 import { supabase } from '@/services/supabase'
 import { translateAppError } from '@/utils/supabaseAuthErrors'
+import { isMissingPostgrestRpc } from '@/utils/supabasePostgrest'
 
-export type StudentProfileRow = {
-  id: string
-  full_name: string | null
-  class_id: string | null
-}
-
-export async function fetchStudentsForAdmin(): Promise<StudentProfileRow[]> {
+async function assignStudentClassViaUpdate(
+  studentId: string,
+  classId: string | null,
+): Promise<void> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, class_id')
+    .update({ class_id: classId })
+    .eq('id', studentId)
     .eq('role', 'student')
-    .order('full_name', { ascending: true, nullsFirst: false })
-
+    .select('id')
   if (error) {
     throw new Error(translateAppError(error.message))
   }
-  return (data ?? []) as StudentProfileRow[]
+  if (!data?.length) {
+    throw new Error(
+      'O‘quvchi profili yangilanmadi (qator topilmadi yoki RLS cheklovi). ' +
+        'Supabase’da `20260428120000_profiles_admin_update_class.sql` migratsiyasini ishga tushiring.',
+    )
+  }
 }
 
 export async function adminAssignStudentClass(
@@ -28,7 +31,12 @@ export async function adminAssignStudentClass(
     p_student_id: studentId,
     p_class_id: classId,
   })
-  if (error) {
-    throw new Error(translateAppError(error.message))
+  if (!error) {
+    return
   }
+  if (isMissingPostgrestRpc(error.message)) {
+    await assignStudentClassViaUpdate(studentId, classId)
+    return
+  }
+  throw new Error(translateAppError(error.message))
 }

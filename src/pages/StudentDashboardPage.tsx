@@ -9,12 +9,29 @@ import {
   fetchLessonsForClassAndSubject,
   fetchSubjectsForClass,
 } from '@/services/studentPortal.service'
+import { fetchStudentSubjectIds } from '@/services/studentSubject.service'
+
 import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
 import { cn } from '@/utils/cn'
 
+function escapeSqlStringLiteral(value: string): string {
+  return value.replaceAll("'", "''")
+}
+
 export default function StudentDashboardPage() {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const classId = profile?.class_id ?? null
+  const emailForSql = escapeSqlStringLiteral(
+    (user?.email ?? 'admin@elektron.local').trim() || 'admin@elektron.local',
+  )
+  const promoteToAdminSql =
+    `update public.profiles\n` +
+    `set role = 'admin'\n` +
+    `where id = (\n` +
+    `  select id from auth.users\n` +
+    `  where lower(email) = lower('${emailForSql}')\n` +
+    `  limit 1\n` +
+    `);`
 
   const [classRow, setClassRow] = useState<ClassRow | null>(null)
   const [subjects, setSubjects] = useState<SubjectRow[]>([])
@@ -36,18 +53,25 @@ export default function StudentDashboardPage() {
     setError(null)
     setLoadingMeta(true)
     try {
-      const [cls, subs] = await Promise.all([
+      const [cls, subs, assignedIds] = await Promise.all([
         fetchClassById(classId),
         fetchSubjectsForClass(classId),
+        fetchStudentSubjectIds(user?.id ?? ''),
       ])
+
+      let filteredSubs = subs
+      if (assignedIds.length > 0) {
+        filteredSubs = subs.filter((s) => assignedIds.includes(s.id))
+      }
       setClassRow(cls)
-      setSubjects(subs)
+      setSubjects(filteredSubs)
       setSelectedSubjectId((prev) => {
-        if (prev && subs.some((s) => s.id === prev)) {
+        if (prev && filteredSubs.some((s) => s.id === prev)) {
           return prev
         }
-        return subs[0]?.id ?? ''
+        return filteredSubs[0]?.id ?? ''
       })
+
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sinf ma’lumotlari yuklanmadi')
     } finally {
@@ -113,13 +137,24 @@ export default function StudentDashboardPage() {
           }
         />
         <Card className="border-amber-200 bg-amber-50/50 p-6 text-sm text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="mb-4 rounded-lg border border-amber-300/60 bg-amber-100/40 p-3 text-amber-950 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-50">
+            <strong>Administrator bo‘lishingiz kerakmi?</strong> Yon panelda «O‘quvchi» turgan bo‘lsa,
+            bazada <code className="rounded bg-white/70 px-1 font-mono text-xs dark:bg-slate-900/70">profiles.role</code>{' '}
+            hali <code className="rounded bg-white/70 px-1 font-mono text-xs dark:bg-slate-900/70">student</code> — yangi
+            foydalanuvchi uchun trigger avtomatik shunday yozadi. Supabase → <strong>SQL Editor</strong> da quyidagi so‘rovni
+            bir marta ishga tushiring, keyin brauzerni <strong>yangilang (F5)</strong> yoki qayta kiring; keyin{' '}
+            <code className="rounded bg-white/70 px-1 font-mono text-xs dark:bg-slate-900/70">/admin</code> ochiladi.
+          </p>
+          <code className="mb-4 block whitespace-pre-wrap rounded-xl bg-white/80 p-3 font-mono text-xs text-slate-800 shadow-inner dark:bg-slate-900/80 dark:text-slate-200">
+            {promoteToAdminSql}
+          </code>
           <p className="mb-3">
-            <strong>Admin panel:</strong> administrator sifatida kirganingizda «Sinflar va fanlar»
-            sahifasida pastda <strong>«O‘quvchilarni sinfga biriktirish»</strong> jadvalidan sinf
-            tanlang va <strong>Saqlash</strong> ni bosing.
+            <strong>O‘quvchi uchun sinf:</strong> administrator sifatida kirgach «Sinflar va fanlar» sahifasida pastda{' '}
+            <strong>«O‘quvchilarni sinfga biriktirish»</strong> jadvalidan sinf tanlang va <strong>Saqlash</strong> ni
+            bosing.
           </p>
           <p className="mb-2 text-xs text-amber-900/90 dark:text-amber-200/90">
-            SQL Editor (Dashboard) uchun namuna — email va sinf UUID sini almashtiring:
+            SQL Editor uchun namuna (o‘quvchi emaili va sinf UUID) — faqat haqiqiy o‘quvchi akkauntlari uchun:
           </p>
           <code className="mt-1 block whitespace-pre-wrap rounded-xl bg-white/80 p-3 font-mono text-xs text-slate-800 shadow-inner dark:bg-slate-900/80 dark:text-slate-200">
             {`update public.profiles\nset class_id = '<SINF_UUID>'\nwhere id = (\n  select id from auth.users\n  where lower(email) = lower('oquvchi@email.com')\n  limit 1\n);`}
@@ -222,9 +257,17 @@ export default function StudentDashboardPage() {
                 <Card className="p-5 transition hover:border-slate-300 hover:shadow-md dark:hover:border-slate-600">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                        {lesson.title}
-                      </h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          {lesson.title}
+                        </h3>
+                        {lesson.quarter && (
+                          <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+                            {lesson.quarter}-chorak
+                          </span>
+                        )}
+                      </div>
+
                       {lesson.description ? (
                         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                           {lesson.description}

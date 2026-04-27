@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { Home, Layout, BookOpen } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 
 export function StudentLayout() {
@@ -7,9 +8,9 @@ export function StudentLayout() {
       brand={{ title: "O'quvchi", to: '/student' }}
       accent="sky"
       nav={[
-        { to: '/student', label: 'Bosh sahifa', end: true },
-        { to: '/student/results', label: 'Natijalar' },
-        { to: '/guide', label: "Yo'riqnoma" },
+        { to: '/student', label: 'Bosh sahifa', icon: <Home className="size-5" />, end: true },
+        { to: '/student/results', label: 'Natijalar', icon: <Layout className="size-5" /> },
+        { to: '/guide', label: "Yo'riqnoma", icon: <BookOpen className="size-5" /> },
       ]}
     >
       <Outlet />

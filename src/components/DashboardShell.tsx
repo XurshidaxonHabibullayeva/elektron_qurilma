@@ -1,30 +1,42 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  LogOut, 
+  Menu, 
+  X,
+  User
+} from 'lucide-react'
 import { Button } from '@/components/Button'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 
-export type ShellNavItem = { to: string; label: string; end?: boolean }
+export type ShellNavItem = { 
+  to: string; 
+  label: string; 
+  end?: boolean;
+  icon?: ReactNode;
+}
 
 export type ShellAccent = 'violet' | 'teal' | 'sky'
 
 const ACCENT = {
   violet: {
-    dot: 'bg-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.45)]',
-    active:
-      'bg-violet-600 text-white shadow-md dark:bg-violet-500 dark:text-white',
-    mobileTitle: 'text-violet-950 dark:text-violet-100',
+    dot: 'bg-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.5)]',
+    active: 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white dark:from-violet-500 dark:to-indigo-500',
+    mobileTitle: 'text-violet-900 dark:text-violet-100',
   },
   teal: {
-    dot: 'bg-teal-500 shadow-[0_0_12px_rgba(20,184,166,0.45)]',
-    active: 'bg-teal-600 text-white shadow-md dark:bg-teal-500 dark:text-white',
-    mobileTitle: 'text-teal-950 dark:text-teal-100',
+    dot: 'bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.5)]',
+    active: 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white dark:from-teal-500 dark:to-emerald-500',
+    mobileTitle: 'text-teal-900 dark:text-teal-100',
   },
   sky: {
-    dot: 'bg-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.45)]',
-    active: 'bg-sky-600 text-white shadow-md dark:bg-sky-500 dark:text-white',
-    mobileTitle: 'text-sky-950 dark:text-sky-100',
+    dot: 'bg-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.5)]',
+    active: 'bg-gradient-to-r from-sky-600 to-blue-600 text-white dark:from-sky-500 dark:to-blue-500',
+    mobileTitle: 'text-sky-900 dark:text-sky-100',
   },
 } as const
 
@@ -39,44 +51,43 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
   const { profile, user, signOut } = useAuth()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const a = ACCENT[accent]
 
-  const label =
-    profile?.full_name?.trim() ||
-    (typeof user?.user_metadata?.full_name === 'string'
-      ? user.user_metadata.full_name
-      : null) ||
-    user?.email
+  const fullName = profile?.full_name?.trim() || (typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null)
+  const label = fullName || user?.email
 
   useEffect(() => {
-    const id = window.setTimeout(() => {
-      setSidebarOpen(false)
-    }, 0)
-    return () => window.clearTimeout(id)
+    setSidebarOpen(false)
   }, [location.pathname])
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+      'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+      isCollapsed ? 'justify-center px-2' : '',
       isActive
-        ? a.active
-        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5',
+        ? cn(a.active, 'translate-x-1 shadow-lg shadow-black/5 dark:shadow-white/5')
+        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/5 hover:translate-x-1',
     )
 
   const sidebarInner = (
-    <div className="flex h-full min-h-0 flex-col border-r border-slate-200/80 bg-white/95 px-4 py-6 shadow-md backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95 lg:shadow-none">
-      <NavLink
-        to={brand.to}
-        className="mb-8 flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-slate-100 dark:hover:bg-white/5"
-        onClick={() => setSidebarOpen(false)}
-      >
-        <span className={cn('size-2.5 shrink-0 rounded-full', a.dot)} aria-hidden />
-        <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-          {brand.title}
-        </span>
-      </NavLink>
+    <div className="flex h-full flex-col bg-white/80 px-3 py-6 backdrop-blur-xl dark:bg-slate-950/80">
+      <div className={cn("mb-8 flex items-center transition-all duration-300", isCollapsed ? "justify-center" : "px-3")}>
+        <NavLink
+          to={brand.to}
+          className="flex items-center gap-3 group"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <div className={cn('size-3 shrink-0 rounded-full transition-transform group-hover:scale-125', a.dot)} />
+          {!isCollapsed && (
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent dark:from-white dark:to-slate-400">
+              {brand.title}
+            </span>
+          )}
+        </NavLink>
+      </div>
 
-      <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto" aria-label="Asosiy menyu">
+      <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-1 custom-scrollbar" aria-label="Asosiy menyu">
         {nav.map((item) => (
           <NavLink
             key={item.to}
@@ -84,122 +95,121 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
             end={item.end}
             className={navLinkClass}
             onClick={() => setSidebarOpen(false)}
+            title={isCollapsed ? item.label : undefined}
           >
-            {item.label}
+            {item.icon && <span className={cn("size-5 shrink-0", !isCollapsed && "opacity-80 group-hover:opacity-100")}>{item.icon}</span>}
+            {!isCollapsed && <span className="truncate">{item.label}</span>}
+            {isCollapsed && !item.icon && <span className="text-xs font-bold uppercase">{item.label[0]}</span>}
           </NavLink>
         ))}
       </nav>
 
-      <div className="mt-6 space-y-3 border-t border-slate-200/80 pt-6 dark:border-slate-800">
-        {label ? (
-          <p className="truncate px-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-            {label}
-          </p>
-        ) : null}
-        <div className="flex items-center gap-2 px-1">
-          <ThemeToggle className="size-10 shrink-0" />
+      <div className="mt-auto space-y-4 pt-6 border-t border-slate-200/50 dark:border-slate-800/50">
+        <div className={cn("flex flex-col gap-4", isCollapsed ? "items-center" : "px-3")}>
+          <div className={cn("flex items-center gap-3", isCollapsed ? "flex-col" : "")}>
+             <ThemeToggle className={cn("size-10 transition-transform hover:scale-105", isCollapsed ? "" : "shrink-0")} />
+             {!isCollapsed && (
+               <div className="min-w-0 flex-1">
+                 <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                   {fullName || 'Foydalanuvchi'}
+                 </p>
+                 <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                   {user?.email}
+                 </p>
+               </div>
+             )}
+          </div>
+          
           <Button
             type="button"
             variant="secondary"
-            className="min-w-0 flex-1 px-3 py-2 text-xs sm:text-sm"
+            className={cn(
+              "relative flex items-center justify-center gap-2 overflow-hidden transition-all duration-200 active:scale-95",
+              isCollapsed ? "size-10 p-0" : "w-full py-2.5"
+            )}
             onClick={() => {
               void signOut()
             }}
+            title="Chiqish"
           >
-            Chiqish
+            <LogOut className="size-4" />
+            {!isCollapsed && <span>Chiqish</span>}
           </Button>
         </div>
+
+        {/* Collapse Toggle (Desktop only) */}
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 size-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:scale-110 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          {isCollapsed ? <ChevronRight className="size-3.5" /> : <ChevronLeft className="size-3.5" />}
+        </button>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-dvh bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-dvh flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90 lg:hidden">
+      <header className="flex-none sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 lg:hidden">
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          aria-expanded={sidebarOpen}
-          aria-controls="app-sidebar"
+          className="inline-flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
           onClick={() => setSidebarOpen((o) => !o)}
         >
-          <span className="sr-only">{sidebarOpen ? 'Menyuni yopish' : 'Menyuni ochish'}</span>
-          {sidebarOpen ? (
-            <svg
-              className="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden
-            >
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg
-              className="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden
-            >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
+          {sidebarOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
+        
         <NavLink
           to={brand.to}
-          className={cn('truncate text-base font-semibold tracking-tight', a.mobileTitle)}
+          className={cn('flex items-center gap-2 text-lg font-bold tracking-tight', a.mobileTitle)}
         >
+          <div className={cn('size-2 rounded-full', a.dot)} />
           {brand.title}
         </NavLink>
-        <ThemeToggle />
+        
+        <div className="flex items-center gap-2">
+           <ThemeToggle className="size-9" />
+        </div>
       </header>
 
-      {/* Backdrop */}
-      {sidebarOpen ? (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
-          aria-label="Menyuni yopish"
-          onClick={() => setSidebarOpen(false)}
-        />
-      ) : null}
-
-      <div className="flex min-h-[calc(100dvh-3.5rem)] lg:min-h-dvh">
-        {/* Sidebar: drawer on mobile, column on desktop */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
         <aside
           id="app-sidebar"
           className={cn(
-            'fixed left-0 z-50 w-72 max-w-[85vw] transition-transform duration-200 ease-out',
-            'top-14 h-[calc(100dvh-3.5rem)] lg:static lg:top-auto lg:z-0 lg:h-auto lg:min-h-dvh lg:w-72 lg:max-w-none lg:translate-x-0',
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            'fixed left-0 z-50 transition-all duration-300 ease-in-out',
+            'top-0 h-full lg:sticky lg:z-0 lg:h-full',
+            isCollapsed ? 'lg:w-20' : 'lg:w-72',
+            sidebarOpen ? 'w-72 translate-x-0' : 'w-72 -translate-x-full lg:translate-x-0',
+            'border-r border-slate-200/60 dark:border-slate-800/60 shadow-xl lg:shadow-none'
           )}
         >
           {sidebarInner}
         </aside>
 
-        <div className="relative flex min-w-0 flex-1 flex-col">
-          {/* Subtle SaaS-style background */}
-          <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent,rgba(15,23,42,0.02))] dark:bg-[linear-gradient(to_bottom,transparent,rgba(248,250,252,0.03))]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.35] dark:opacity-[0.12]"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2394a3b8' fill-opacity='0.12'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-            aria-hidden
-          />
-
-          <main className="relative z-0 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
-            <div className="mx-auto w-full max-w-6xl">{children}</div>
-          </main>
-        </div>
+        {/* Content */}
+        <main className="relative flex min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden custom-scrollbar">
+          {/* Decorative gradients */}
+          <div className="pointer-events-none absolute -top-24 right-0 size-96 bg-sky-500/10 blur-[100px] dark:bg-sky-500/5" />
+          <div className="pointer-events-none absolute -bottom-24 left-0 size-96 bg-violet-500/10 blur-[100px] dark:bg-violet-500/5" />
+          
+          <div className="relative z-10 flex-1 px-4 py-8 sm:px-6 lg:px-10">
+            <div className="mx-auto w-full max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+              {children}
+            </div>
+          </div>
+        </main>
       </div>
+
+      {/* Backdrop for mobile */}
+      {sidebarOpen ? (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      ) : null}
     </div>
   )
 }

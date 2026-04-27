@@ -18,6 +18,7 @@ import UpdatePasswordPage from '@/pages/UpdatePasswordPage'
 import TeacherDashboardPage from '@/pages/TeacherDashboardPage'
 import TeacherQuizPage from '@/pages/TeacherQuizPage'
 import TeacherResultsPage from '@/pages/TeacherResultsPage'
+import TeacherLessonsPage from '@/pages/TeacherLessonsPage'
 import GuidePage from '@/pages/GuidePage'
 
 export default function App() {
@@ -45,8 +46,10 @@ export default function App() {
         <Route element={<RoleGuardLayout allowed={['teacher']} />}>
           <Route element={<TeacherLayout />}>
             <Route path="/teacher" element={<TeacherDashboardPage />} />
+            <Route path="/teacher/lessons" element={<TeacherLessonsPage />} />
             <Route path="/teacher/results" element={<TeacherResultsPage />} />
             <Route path="/teacher/lessons/:lessonId/quiz" element={<TeacherQuizPage />} />
+
           </Route>
         </Route>
         <Route element={<RoleGuardLayout allowed={['student']} />}>

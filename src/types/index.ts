@@ -37,9 +37,11 @@ export type TeacherLessonRow = {
   description: string | null
   video_url: string | null
   material_url: string | null
+  quarter: number | null
   created_at: string
   updated_at: string
 }
+
 
 export type QuizQuestionRow = {
   id: string

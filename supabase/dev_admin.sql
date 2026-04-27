@@ -1,6 +1,11 @@
 -- Avvalo jadvalar bo‘lmasa: supabase/REMOTE_SETUP.sql ni Dashboard SQL Editor’da ishga tushiring.
 -- Admin «o‘quvchini sinfga biriktirish» ishlamasa: 20260426120000_admin_student_class.sql ni qo‘shing.
 --
+-- MUHIM: auth.users ga user qo‘shilganda trigger (handle_new_user) public.profiles qatorini
+-- role = 'student' bilan yaratadi. Shuning uchun administrator uchun quyidagi UPDATE ni
+-- foydalanuvchi mavjud bo‘lgach (va profiles qatori bo‘lgach) bir marta ishlatish kerak.
+-- Aks holda ilovada «O‘quvchi» paneli ochiladi — bu xato emas, role hali student.
+--
 -- =============================================================================
 -- DOIMIY DEMO ADMIN (bir marta sozlash)
 -- =============================================================================

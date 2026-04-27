@@ -565,6 +565,190 @@ $$;
 
 grant execute on function public.admin_assign_student_class(uuid, uuid) to authenticated;
 
+
+-- ---------------------------------------------------------------------------
+-- 20260428100000_admin_list_and_set_role.sql (+ 20260429120000 sinf ustunlari)
+-- ---------------------------------------------------------------------------
+
+drop policy if exists "lessons_select_admin" on public.lessons;
+
+create policy "lessons_select_admin"
+  on public.lessons
+  for select
+  to authenticated
+  using (public.current_is_admin());
+
+drop function if exists public.admin_list_registered_users();
+
+create function public.admin_list_registered_users()
+returns table (
+  id uuid,
+  full_name text,
+  role text,
+  class_id uuid,
+  email text,
+  registered_at timestamptz,
+  student_class_name text,
+  teacher_classes_summary text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select auth.uid()) is null then
+    raise exception 'Avtorizatsiya talab qilinadi';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    where p.id = (select auth.uid())
+      and p.role = 'admin'
+  ) then
+    raise exception 'Faqat administrator bajarishi mumkin';
+  end if;
+
+  return query
+  select
+    p.id,
+    p.full_name,
+    p.role,
+    p.class_id,
+    coalesce(u.email, '')::text,
+    u.created_at,
+    case
+      when p.role = 'student' then sc.name
+      else null::text
+    end as student_class_name,
+    case
+      when p.role = 'teacher' then (
+        select string_agg(distinct c2.name, ', ' order by c2.name)
+        from public.lessons l
+        inner join public.classes c2 on c2.id = l.class_id
+        where l.teacher_id = p.id
+      )
+      else null::text
+    end as teacher_classes_summary
+  from public.profiles p
+  inner join auth.users u on u.id = p.id
+  left join public.classes sc on sc.id = p.class_id and p.role = 'student'
+  order by u.created_at desc;
+end;
+$$;
+
+grant execute on function public.admin_list_registered_users() to authenticated;
+
+create or replace function public.admin_set_profile_role(
+  p_user_id uuid,
+  p_role text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select auth.uid()) is null then
+    raise exception 'Avtorizatsiya talab qilinadi';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    where p.id = (select auth.uid())
+      and p.role = 'admin'
+  ) then
+    raise exception 'Faqat administrator bajarishi mumkin';
+  end if;
+
+  if p_user_id = (select auth.uid()) then
+    raise exception 'O‘z rolingizni bu yerda o‘zgartirolmaysiz';
+  end if;
+
+  if p_role is null or lower(trim(p_role)) not in ('student', 'teacher') then
+    raise exception 'Ruxsat etilgan rollar: student, teacher';
+  end if;
+
+  if not exists (select 1 from public.profiles where id = p_user_id) then
+    raise exception 'Profil topilmadi';
+  end if;
+
+  if exists (
+    select 1 from public.profiles where id = p_user_id and role = 'admin'
+  ) then
+    raise exception 'Administrator rolini bu paneldan o‘zgartirib bo‘lmaydi';
+  end if;
+
+  update public.profiles
+  set
+    role = lower(trim(p_role)),
+    class_id = case when lower(trim(p_role)) = 'teacher' then null else class_id end
+  where id = p_user_id;
+end;
+$$;
+
+grant execute on function public.admin_set_profile_role(uuid, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- 20260428120000_profiles_admin_update_class.sql
+-- ---------------------------------------------------------------------------
+
+grant update (class_id) on table public.profiles to authenticated;
+
+drop policy if exists "profiles_update_admin_student_class" on public.profiles;
+
+create policy "profiles_update_admin_student_class"
+  on public.profiles
+  for update
+  to authenticated
+  using (
+    public.current_is_admin()
+    and role = 'student'
+  )
+  with check (
+    public.current_is_admin()
+    and role = 'student'
+  );
+
+
+-- ---------------------------------------------------------------------------
+-- 20260430100000_teacher_subjects.sql
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.teacher_subjects (
+  teacher_id uuid not null references auth.users (id) on delete cascade,
+  subject_id uuid not null references public.subjects (id) on delete cascade,
+  created_at timestamptz not null default timezone('utc', now()),
+  primary key (teacher_id, subject_id)
+);
+
+create index if not exists teacher_subjects_teacher_id_idx on public.teacher_subjects (teacher_id);
+create index if not exists teacher_subjects_subject_id_idx on public.teacher_subjects (subject_id);
+
+alter table public.teacher_subjects enable row level security;
+
+drop policy if exists "teacher_subjects_admin_all" on public.teacher_subjects;
+
+create policy "teacher_subjects_admin_all"
+  on public.teacher_subjects
+  for all
+  to authenticated
+  using (public.current_is_admin())
+  with check (public.current_is_admin());
+
+drop policy if exists "teacher_subjects_select_own" on public.teacher_subjects;
+
+create policy "teacher_subjects_select_own"
+  on public.teacher_subjects
+  for select
+  to authenticated
+  using (teacher_id = (select auth.uid()));
+
+grant select, insert, update, delete on table public.teacher_subjects to authenticated;
+grant all on table public.teacher_subjects to service_role;
+
 -- =============================================================================
 -- Tugadi. Mavjud Auth foydalanuvchilari uchun profiles qatorlari:
 -- trigger faqat yangi insertda ishlaydi — eski userlar uchun quyidagini bir marta ishlating:

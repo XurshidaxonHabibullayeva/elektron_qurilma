@@ -5,6 +5,7 @@ import { Card } from '@/components/Card'
 import { LessonQuizSection } from '@/components/LessonQuizSection'
 import { fetchLessonById } from '@/services/studentPortal.service'
 import type { TeacherLessonRow } from '@/types'
+import { getYouTubeEmbedUrl } from '@/utils/youtube'
 
 function formatWhen(iso: string): string {
   try {
@@ -120,8 +121,10 @@ export default function LessonPage() {
             {L.title}
           </h1>
           <p className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+            {L.quarter ? `${L.quarter}-chorak · ` : ''}
             {formatWhen(L.created_at)}
           </p>
+
         </div>
       </div>
 
@@ -143,14 +146,32 @@ export default function LessonPage() {
           Video
         </h2>
         {L.video_url ? (
-          <a
-            href={L.video_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex text-base font-medium text-sky-800 underline-offset-2 hover:underline dark:text-sky-300"
-          >
-            Video havolasini ochish
-          </a>
+          (() => {
+            const embedUrl = getYouTubeEmbedUrl(L.video_url)
+            if (embedUrl) {
+              return (
+                <div className="aspect-video overflow-hidden rounded-xl bg-slate-100 shadow-inner dark:bg-slate-900">
+                  <iframe
+                    src={embedUrl}
+                    title={L.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="size-full border-0"
+                  />
+                </div>
+              )
+            }
+            return (
+              <a
+                href={L.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-base font-medium text-sky-800 underline-offset-2 hover:underline dark:text-sky-300"
+              >
+                Video havolasini ochish
+              </a>
+            )
+          })()
         ) : (
           <p className="text-sm text-slate-500 dark:text-slate-400">Video havolasi kiritilmagan.</p>
         )}
