@@ -12,6 +12,7 @@ import {
 import { fetchOwnedLesson } from '@/services/teacherLesson.service'
 import type { QuizQuestionRow, TeacherLessonRow } from '@/types'
 import { cn } from '@/utils/cn'
+import { getYouTubeEmbedUrl } from '@/utils/youtube'
 
 function formatWhen(iso: string): string {
   try {
@@ -179,6 +180,28 @@ export default function TeacherQuizPage() {
           Ko‘p tanlovli savollar (4 ta variant). Saqlashdan oldin to‘g‘ri javobni belgilang.
         </p>
       </div>
+
+      {L.video_url && (
+        <Card className="p-0 overflow-hidden max-w-2xl">
+          {(() => {
+            const embedUrl = getYouTubeEmbedUrl(L.video_url)
+            if (embedUrl) {
+              return (
+                <div className="aspect-video bg-slate-100 dark:bg-slate-900 shadow-inner">
+                  <iframe
+                    src={embedUrl}
+                    title={L.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="size-full border-0"
+                  />
+                </div>
+              )
+            }
+            return null
+          })()}
+        </Card>
+      )}
 
       <Card className="p-6 sm:p-8">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Yangi savol</h2>

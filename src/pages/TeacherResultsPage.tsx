@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { StatCard } from '@/components/StatCard'
 import { fetchResultsDashboard } from '@/services/quiz.service'
 import type { ResultDashboardRow } from '@/types'
+import { cn } from '@/utils/cn'
 
 function formatWhen(iso: string): string {
   try {
@@ -116,8 +117,10 @@ export default function TeacherResultsPage() {
           <table className="w-full min-w-[520px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/90 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-400">
               <tr>
-                <th className="px-5 py-3">Dars</th>
                 <th className="px-5 py-3">O‘quvchi</th>
+                <th className="px-5 py-3">Sinf</th>
+                <th className="px-5 py-3">Fan</th>
+                <th className="px-5 py-3">Dars (Mavzu)</th>
                 <th className="px-5 py-3">Ball</th>
                 <th className="px-5 py-3">Sana</th>
               </tr>
@@ -125,32 +128,52 @@ export default function TeacherResultsPage() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/80">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
                     Yuklanmoqda…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
                     Hozircha natija yo‘q. O‘quvchilar test topshirgach, bu yerda qatorlar paydo bo‘ladi.
                   </td>
                 </tr>
               ) : (
                 rows.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                    <td className="px-5 py-3">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-900 dark:text-white">
+                          {r.student?.full_name || 'Ism kiritilmagan'}
+                        </span>
+                        <span
+                          className="font-mono text-[10px] text-slate-400 dark:text-slate-500"
+                          title={r.student_id}
+                        >
+                          ID: {shortStudentId(r.student_id)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3 text-slate-700 dark:text-slate-300">
+                      {r.lesson?.class?.name || '—'}
+                    </td>
+                    <td className="px-5 py-3 text-slate-700 dark:text-slate-300">
+                      <span className="inline-flex items-center rounded-md bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-600/10 dark:bg-teal-400/10 dark:text-teal-400 dark:ring-teal-400/20">
+                        {r.lesson?.subject?.name || '—'}
+                      </span>
+                    </td>
                     <td className="px-5 py-3 font-medium text-slate-900 dark:text-slate-100">
                       {r.lesson?.title ?? '—'}
                     </td>
                     <td className="px-5 py-3">
-                      <span
-                        className="font-mono text-xs text-slate-600 dark:text-slate-400"
-                        title={r.student_id}
-                      >
-                        {shortStudentId(r.student_id)}
+                      <span className={cn(
+                        "font-bold",
+                        (r.score / r.total_questions) >= 0.8 ? "text-green-600 dark:text-green-400" : 
+                        (r.score / r.total_questions) >= 0.5 ? "text-amber-600 dark:text-amber-400" : 
+                        "text-red-600 dark:text-red-400"
+                      )}>
+                        {r.score} / {r.total_questions}
                       </span>
-                    </td>
-                    <td className="px-5 py-3 text-slate-800 dark:text-slate-200">
-                      {r.score} / {r.total_questions}
                     </td>
                     <td className="px-5 py-3 text-slate-600 dark:text-slate-400">
                       {formatWhen(r.created_at)}

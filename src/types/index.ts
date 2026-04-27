@@ -82,5 +82,12 @@ export type ResultDashboardRow = {
   score: number
   total_questions: number
   created_at: string
-  lesson: { title: string } | null
+  lesson: {
+    title: string
+    class: { name: string } | null
+    subject: { name: string } | null
+  } | null
+  student: {
+    full_name: string | null
+  } | null
 }

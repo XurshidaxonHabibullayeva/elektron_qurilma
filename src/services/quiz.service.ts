@@ -133,7 +133,14 @@ export async function fetchResultsDashboard(): Promise<ResultDashboardRow[]> {
       score,
       total_questions,
       created_at,
-      lesson:lessons ( title )
+      lesson:lessons!lesson_id (
+        title,
+        class:classes ( name ),
+        subject:subjects ( name )
+      ),
+      student:profiles!student_id (
+        full_name
+      )
     `,
     )
     .order('created_at', { ascending: false })
@@ -143,15 +150,7 @@ export async function fetchResultsDashboard(): Promise<ResultDashboardRow[]> {
   }
 
   return (data ?? []).map((row) => {
-    const r = row as Record<string, unknown>
-    const lessonRaw = r.lesson
-    const lesson =
-      lessonRaw &&
-      typeof lessonRaw === 'object' &&
-      !Array.isArray(lessonRaw) &&
-      'title' in lessonRaw
-        ? { title: String((lessonRaw as { title: unknown }).title) }
-        : null
+    const r = row as any
     return {
       id: String(r.id),
       student_id: String(r.student_id),
@@ -159,7 +158,14 @@ export async function fetchResultsDashboard(): Promise<ResultDashboardRow[]> {
       score: Number(r.score),
       total_questions: Number(r.total_questions),
       created_at: String(r.created_at),
-      lesson,
+      lesson: r.lesson
+        ? {
+            title: String(r.lesson.title),
+            class: r.lesson.class ? { name: String(r.lesson.class.name) } : null,
+            subject: r.lesson.subject ? { name: String(r.lesson.subject.name) } : null,
+          }
+        : null,
+      student: r.student ? { full_name: r.student.full_name ? String(r.student.full_name) : null } : null,
     }
   })
 }

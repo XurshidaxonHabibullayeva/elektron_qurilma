@@ -11,6 +11,7 @@ import { createLesson, deleteLesson, fetchMyLessons, updateLesson } from '@/serv
 import { fetchTeacherSubjectIds } from '@/services/teacherSubject.service'
 import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
 import { cn } from '@/utils/cn'
+import { getYouTubeEmbedUrl } from '@/utils/youtube'
 
 function selectClassName(): string {
   return cn(
@@ -538,6 +539,29 @@ export default function TeacherDashboardPage() {
                       ) : null}
                     </div>
                   </div>
+
+                  {lesson.video_url && (
+                    <div className="mt-4 max-w-2xl">
+                      {(() => {
+                        const embedUrl = getYouTubeEmbedUrl(lesson.video_url)
+                        if (embedUrl) {
+                          return (
+                            <div className="aspect-video overflow-hidden rounded-xl bg-slate-100 shadow-inner dark:bg-slate-900">
+                              <iframe
+                                src={embedUrl}
+                                title={lesson.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="size-full border-0"
+                              />
+                            </div>
+                          )
+                        }
+                        return null
+                      })()}
+                    </div>
+                  )}
+
                   <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
                     {lesson.video_url ? (
                       <a
