@@ -56,7 +56,10 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
   const fullName = profile?.full_name?.trim() || (typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null)
 
   useEffect(() => {
-    setSidebarOpen(false)
+    const t = window.setTimeout(() => {
+      setSidebarOpen(false)
+    }, 0)
+    return () => window.clearTimeout(t)
   }, [location.pathname])
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>

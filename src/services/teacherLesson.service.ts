@@ -89,7 +89,7 @@ export async function createLesson(input: CreateLessonInput): Promise<TeacherLes
 
 export async function updateLesson(input: UpdateLessonInput): Promise<TeacherLessonRow> {
   const { id, ...rest } = input
-  const updateData: Record<string, any> = {}
+  const updateData: Record<string, string | number | null> = {}
 
   if (rest.title !== undefined) updateData.title = rest.title.trim()
   if (rest.classId !== undefined) updateData.class_id = rest.classId

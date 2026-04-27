@@ -77,7 +77,7 @@ export default function StudentDashboardPage() {
     } finally {
       setLoadingMeta(false)
     }
-  }, [classId])
+  }, [classId, user])
 
   useEffect(() => {
     const t = window.setTimeout(() => {

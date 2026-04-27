@@ -158,14 +158,18 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!tsTeacherId) {
-      setTsSubjectIds([])
-      setTsError(null)
-      setTsLoading(false)
+      void Promise.resolve().then(() => {
+        setTsSubjectIds([])
+        setTsError(null)
+        setTsLoading(false)
+      })
       return
     }
     let cancelled = false
-    setTsLoading(true)
-    setTsError(null)
+    void Promise.resolve().then(() => {
+      setTsLoading(true)
+      setTsError(null)
+    })
     void fetchTeacherSubjectIds(tsTeacherId)
       .then((ids) => {
         if (!cancelled) {
@@ -190,14 +194,18 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!ssStudentId) {
-      setSsSubjectIds([])
-      setSsError(null)
-      setSsLoading(false)
+      void Promise.resolve().then(() => {
+        setSsSubjectIds([])
+        setSsError(null)
+        setSsLoading(false)
+      })
       return
     }
     let cancelled = false
-    setSsLoading(true)
-    setSsError(null)
+    void Promise.resolve().then(() => {
+      setSsLoading(true)
+      setSsError(null)
+    })
     void fetchStudentSubjectIds(ssStudentId)
       .then((ids) => {
         if (!cancelled) {

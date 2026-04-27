@@ -122,12 +122,17 @@ export default function TeacherDashboardPage() {
 
   useEffect(() => {
     if (!teacherId) {
-      setSubjectRestrict('none')
-      setLimitedSubjectIds([])
+      void Promise.resolve().then(() => {
+        setSubjectRestrict('none')
+        setLimitedSubjectIds([])
+      })
       return
     }
     let cancelled = false
-    setSubjectRestrict('pending')
+    void Promise.resolve().then(() => {
+      if (cancelled) return
+      setSubjectRestrict('pending')
+    })
     void fetchTeacherSubjectIds(teacherId)
       .then((ids) => {
         if (cancelled) {
@@ -157,7 +162,7 @@ export default function TeacherDashboardPage() {
       return
     }
     if (subjectRestrict === 'limited' && !limitedSubjectIds.includes(subjectId)) {
-      setSubjectId('')
+      void Promise.resolve().then(() => setSubjectId(''))
     }
   }, [subjectRestrict, limitedSubjectIds, subjectId])
 

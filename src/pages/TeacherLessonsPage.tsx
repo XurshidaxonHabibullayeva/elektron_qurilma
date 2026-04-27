@@ -4,7 +4,6 @@ import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { PageHeader } from '@/components/PageHeader'
 import { StatCard } from '@/components/StatCard'
-import { useAuth } from '@/hooks/useAuth'
 import { fetchClasses, fetchSubjects } from '@/services/classSubject.service'
 import { deleteLesson, fetchMyLessons } from '@/services/teacherLesson.service'
 import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
@@ -21,7 +20,6 @@ function formatWhen(iso: string): string {
 }
 
 export default function TeacherLessonsPage() {
-  const { } = useAuth()
   const [classes, setClasses] = useState<ClassRow[]>([])
   const [subjects, setSubjects] = useState<SubjectRow[]>([])
   const [lessons, setLessons] = useState<TeacherLessonRow[]>([])
@@ -60,7 +58,10 @@ export default function TeacherLessonsPage() {
   }, [])
 
   useEffect(() => {
-    void loadData()
+    const t = window.setTimeout(() => {
+      void loadData()
+    }, 0)
+    return () => window.clearTimeout(t)
   }, [loadData])
 
   async function handleDelete(lessonId: string) {
