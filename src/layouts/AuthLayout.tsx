@@ -27,13 +27,6 @@ export function AuthLayout() {
           </Link>
         </div>
         <Outlet />
-        <p className="mt-10 text-center text-xs text-slate-500 dark:text-slate-400">
-          API ulanishi uchun loyiha ichidagi{' '}
-          <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            services/
-          </code>{' '}
-          papkasidan foydalaning.
-        </p>
       </div>
     </div>
   )

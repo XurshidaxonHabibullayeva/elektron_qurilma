@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Fingerprint, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { TextField } from '@/components/TextField'
@@ -59,15 +60,20 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="p-8 sm:p-10">
-      <div className="mb-8 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          Tizimga kirish
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Supabase autentifikatsiyasida ro‘yxatdan o‘tgan elektron pochta va parolingizni kiriting.
-        </p>
-      </div>
+    <div className="group relative w-full">
+      <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-sky-400 to-indigo-500 opacity-20 blur-xl transition duration-1000 group-hover:opacity-40 group-hover:duration-200 dark:opacity-30"></div>
+      <Card className="relative overflow-hidden border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 sm:p-10">
+        <div className="mb-8 text-center space-y-3">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-500 shadow-lg shadow-indigo-500/30">
+            <Fingerprint className="size-7 text-white" strokeWidth={1.5} />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Xush kelibsiz
+          </h1>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Tizimga kirish uchun ma'lumotlaringizni kiriting
+          </p>
+        </div>
       <form className="space-y-5" onSubmit={handleSubmit}>
         <TextField
           id="email"
@@ -111,8 +117,15 @@ export default function LoginPage() {
             {info}
           </p>
         ) : null}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Kirilmoqda…' : 'Davom etish'}
+        <Button type="submit" className="w-full relative overflow-hidden group/btn shadow-md" disabled={loading}>
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            {loading ? 'Kirilmoqda…' : (
+              <>
+                Davom etish
+                <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-1" />
+              </>
+            )}
+          </span>
         </Button>
       </form>
       <p className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
@@ -124,6 +137,7 @@ export default function LoginPage() {
           Ro‘yxatdan o‘ting
         </Link>
       </p>
-    </Card>
+      </Card>
+    </div>
   )
 }
