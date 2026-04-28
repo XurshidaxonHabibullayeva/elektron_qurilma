@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { UserPlus, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { TextField } from '@/components/TextField'
@@ -18,11 +19,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  
-  const [step, setStep] = useState<'register' | 'verify'>('register')
-  const [registeredEmail, setRegisteredEmail] = useState('')
-
-  async function handleRegisterSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setInfo(null)
@@ -42,10 +39,8 @@ export default function RegisterPage() {
         const profile = await loadOrCreateProfile(sessionData.session.user.id)
         navigate(roleHomePath(profile.role), { replace: true })
       } else {
-        setRegisteredEmail(email)
-        setStep('verify')
         setInfo(
-          'Elektron pochtangizga tasdiqlash kodi yuborildi. Iltimos, kodni kiriting.',
+          'Tasdiqlash havolasi elektron pochtangizga yuborildi. Pochtani tasdiqlagach kirishingiz mumkin.',
         )
       }
     } catch (err) {
@@ -56,65 +51,23 @@ export default function RegisterPage() {
     }
   }
 
-  async function handleVerifySubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    setInfo(null)
-    const form = new FormData(e.currentTarget)
-    const code = String(form.get('code') ?? '').trim()
-    
-    if (!code) {
-      setError('Kodni kiriting')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const { data, error: verifyErr } = await supabase.auth.verifyOtp({
-        email: registeredEmail,
-        token: code,
-        type: 'signup',
-      })
-      
-      if (verifyErr) {
-        throw new Error(verifyErr.message)
-      }
-      
-      if (data.session) {
-        const profile = await loadOrCreateProfile(data.session.user.id)
-        navigate(roleHomePath(profile.role), { replace: true })
-      } else {
-        throw new Error('Sessiya yaratilmadi. Iltimos, qaytadan urinib ko‘ring.')
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Xatolik yuz berdi'
-      setError(translateAppError(msg))
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <Card className="p-8 sm:p-10">
-      <div className="mb-8 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          {step === 'register' ? 'Ro‘yxatdan o‘tish' : 'Pochtani tasdiqlash'}
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          {step === 'register' ? (
-            <>
-              Supabase’da foydalanuvchi yaratiladi va <code className="font-mono text-xs">profiles</code> qatoriga yozuv qo‘shiladi.
-            </>
-          ) : (
-            <>
-              <span className="font-medium text-slate-900 dark:text-white">{registeredEmail}</span> manziliga yuborilgan 6 xonali kodni kiriting.
-            </>
-          )}
-        </p>
-      </div>
+    <div className="group relative w-full">
+      <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-sky-400 to-indigo-500 opacity-20 blur-xl transition duration-1000 group-hover:opacity-40 group-hover:duration-200 dark:opacity-30"></div>
+      <Card className="relative overflow-hidden border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/70 sm:p-10">
+        <div className="mb-8 text-center space-y-3">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-500 shadow-lg shadow-indigo-500/30">
+            <UserPlus className="size-7 text-white" strokeWidth={1.5} />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Ro‘yxatdan o‘tish
+          </h1>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Yangi akkaunt yaratish uchun ma’lumotlarni kiriting
+          </p>
+        </div>
 
-      {step === 'register' ? (
-        <form className="space-y-5" onSubmit={handleRegisterSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <TextField
             id="name"
             name="name"
@@ -170,59 +123,18 @@ export default function RegisterPage() {
               {info}
             </p>
           ) : null}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Yaratilmoqda…' : 'Ro‘yxatdan o‘tish'}
+          <Button type="submit" className="w-full relative overflow-hidden group/btn shadow-md" disabled={loading}>
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              {loading ? 'Yaratilmoqda…' : (
+                <>
+                  Davom etish
+                  <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-1" />
+                </>
+              )}
+            </span>
           </Button>
         </form>
-      ) : (
-        <form className="space-y-5" onSubmit={handleVerifySubmit}>
-          <TextField
-            id="code"
-            name="code"
-            type="text"
-            label="Tasdiqlash kodi"
-            autoComplete="one-time-code"
-            placeholder="000000"
-            required
-          />
-          {error ? (
-            <p
-              className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-200"
-              role="alert"
-            >
-              {error}
-            </p>
-          ) : null}
-          {info ? (
-            <p
-              className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-100"
-              role="status"
-            >
-              {info}
-            </p>
-          ) : null}
-          <div className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Tasdiqlanmoqda…' : 'Tasdiqlash'}
-            </Button>
-            <Button 
-              type="button" 
-              variant="secondary" 
-              className="w-full" 
-              onClick={() => {
-                setStep('register')
-                setError(null)
-                setInfo(null)
-              }}
-              disabled={loading}
-            >
-              Orqaga
-            </Button>
-          </div>
-        </form>
-      )}
 
-      {step === 'register' && (
         <p className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
           Allaqachon ro‘yxatdan o‘tganmisiz?{' '}
           <Link
@@ -232,7 +144,7 @@ export default function RegisterPage() {
             Kirish
           </Link>
         </p>
-      )}
-    </Card>
+      </Card>
+    </div>
   )
 }

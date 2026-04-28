@@ -61,6 +61,10 @@ export default function TeacherDashboardPage() {
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
   const [viewingMaterialUrl, setViewingMaterialUrl] = useState<string | null>(null)
 
+  const [filterClassId, setFilterClassId] = useState('')
+  const [filterSubjectId, setFilterSubjectId] = useState('')
+  const [filterQuarter, setFilterQuarter] = useState('')
+
   const classNameById = useMemo(() => {
     const m = new Map<string, string>()
     for (const c of classes) {
@@ -83,6 +87,15 @@ export default function TeacherDashboardPage() {
     }
     return subjects.filter((s) => limitedSubjectIds.includes(s.id))
   }, [subjects, subjectRestrict, limitedSubjectIds])
+
+  const filteredLessons = useMemo(() => {
+    return lessons.filter((l) => {
+      if (filterClassId && l.class_id !== filterClassId) return false
+      if (filterSubjectId && l.subject_id !== filterSubjectId) return false
+      if (filterQuarter && String(l.quarter) !== filterQuarter) return false
+      return true
+    })
+  }, [lessons, filterClassId, filterSubjectId, filterQuarter])
 
   const loadCatalog = useCallback(async () => {
     setListError(null)
@@ -551,21 +564,81 @@ export default function TeacherDashboardPage() {
       </Card>
 
       <section aria-labelledby="my-lessons-heading">
-        <h2
-          id="my-lessons-heading"
-          className="mb-4 text-lg font-semibold text-slate-900 dark:text-white"
-        >
-          Mening darslarim
-        </h2>
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2
+            id="my-lessons-heading"
+            className="text-lg font-semibold text-slate-900 dark:text-white"
+          >
+            Mening darslarim
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[120px]')}
+              value={filterClassId}
+              onChange={(e) => setFilterClassId(e.target.value)}
+            >
+              <option value="">Barcha sinflar</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[120px]')}
+              value={filterSubjectId}
+              onChange={(e) => setFilterSubjectId(e.target.value)}
+            >
+              <option value="">Barcha fanlar</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[120px]')}
+              value={filterQuarter}
+              onChange={(e) => setFilterQuarter(e.target.value)}
+            >
+              <option value="">Barcha choraklar</option>
+              <option value="1">1-chorak</option>
+              <option value="2">2-chorak</option>
+              <option value="3">3-chorak</option>
+              <option value="4">4-chorak</option>
+            </select>
+
+            {(filterClassId || filterSubjectId || filterQuarter) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilterClassId('')
+                  setFilterSubjectId('')
+                  setFilterQuarter('')
+                }}
+                className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                Tozalash
+              </Button>
+            )}
+          </div>
+        </div>
+
         {lessonsLoading ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">Darslar yuklanmoqda…</p>
-        ) : lessons.length === 0 ? (
+        ) : filteredLessons.length === 0 ? (
           <Card className="p-8 text-center text-sm text-slate-600 dark:text-slate-400">
-            Hozircha dars yo‘q. Yuqoridagi forma orqali yarating.
+            {lessons.length === 0
+              ? 'Hozircha dars yo‘q. Yuqoridagi forma orqali yarating.'
+              : 'Tanlangan filtrlar bo‘yicha dars topilmadi.'}
           </Card>
         ) : (
           <ul className="space-y-4">
-            {lessons.map((lesson) => (
+            {filteredLessons.map((lesson) => (
               <li key={lesson.id}>
                 <Card className="border-teal-100/80 p-5 dark:border-teal-900/40">
                   <div className="flex flex-wrap items-start justify-between gap-3">
