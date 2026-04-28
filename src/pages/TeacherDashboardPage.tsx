@@ -572,22 +572,25 @@ export default function TeacherDashboardPage() {
             Mening darslarim
           </h2>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <select
-              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[120px]')}
-              value={filterClassId}
-              onChange={(e) => setFilterClassId(e.target.value)}
-            >
-              <option value="">Barcha sinflar</option>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-wrap items-center gap-3 bg-slate-50/50 dark:bg-slate-800/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pl-2">Filter:</span>
+              <select
+                className={cn(selectClassName(), 'mt-0 !w-auto min-w-[130px] !py-1.5')}
+                value={filterClassId}
+                onChange={(e) => setFilterClassId(e.target.value)}
+              >
+                <option value="">Barcha sinflar</option>
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <select
-              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[120px]')}
+              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[130px] !py-1.5')}
               value={filterSubjectId}
               onChange={(e) => setFilterSubjectId(e.target.value)}
             >
@@ -600,7 +603,7 @@ export default function TeacherDashboardPage() {
             </select>
 
             <select
-              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[120px]')}
+              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[130px] !py-1.5')}
               value={filterQuarter}
               onChange={(e) => setFilterQuarter(e.target.value)}
             >
@@ -620,7 +623,7 @@ export default function TeacherDashboardPage() {
                   setFilterSubjectId('')
                   setFilterQuarter('')
                 }}
-                className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
               >
                 Tozalash
               </Button>
@@ -745,7 +748,7 @@ export default function TeacherDashboardPage() {
         open={!!viewingMaterialUrl}
         title="Materialni ko‘rish"
         onClose={() => setViewingMaterialUrl(null)}
-        className="!max-w-5xl w-full"
+        className="!max-w-[95vw] w-full"
       >
         {viewingMaterialUrl && <DocumentViewer url={viewingMaterialUrl} />}
       </Modal>

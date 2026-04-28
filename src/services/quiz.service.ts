@@ -150,7 +150,20 @@ export async function fetchResultsDashboard(): Promise<ResultDashboardRow[]> {
   }
 
   return (data ?? []).map((row) => {
-    const r = row as any
+    const r = row as unknown as {
+      id: unknown
+      student_id: unknown
+      lesson_id: unknown
+      score: unknown
+      total_questions: unknown
+      created_at: unknown
+      lesson?: {
+        title: unknown
+        class?: { name: unknown } | null
+        subject?: { name: unknown } | null
+      } | null
+      student?: { full_name: unknown } | null
+    }
     return {
       id: String(r.id),
       student_id: String(r.student_id),

@@ -46,7 +46,7 @@ export function DocumentViewer({ url }: DocumentViewerProps) {
 
   if (isPdf) {
     return (
-      <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="relative h-[80vh] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
         <object
           data={url}
           type="application/pdf"
@@ -68,7 +68,7 @@ export function DocumentViewer({ url }: DocumentViewerProps) {
   if (isOfficeDoc) {
     const googleDocsUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`
     return (
-      <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="relative h-[80vh] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50">
             <div className="size-8 animate-spin rounded-full border-2 border-slate-300 border-t-teal-600 dark:border-slate-600 dark:border-t-teal-400"></div>

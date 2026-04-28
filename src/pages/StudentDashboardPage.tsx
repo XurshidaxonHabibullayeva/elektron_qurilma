@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '@/components/Card'
 import { PageHeader } from '@/components/PageHeader'
@@ -37,6 +37,7 @@ export default function StudentDashboardPage() {
   const [subjects, setSubjects] = useState<SubjectRow[]>([])
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('')
   const [lessons, setLessons] = useState<TeacherLessonRow[]>([])
+  const [selectedQuarter, setSelectedQuarter] = useState<string>('')
   const [loadingMeta, setLoadingMeta] = useState(true)
   const [loadingLessons, setLoadingLessons] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -120,6 +121,11 @@ export default function StudentDashboardPage() {
       window.clearTimeout(t)
     }
   }, [classId, selectedSubjectId])
+
+  const filteredLessons = useMemo(() => {
+    if (!selectedQuarter) return lessons
+    return lessons.filter((l) => String(l.quarter) === selectedQuarter)
+  }, [lessons, selectedQuarter])
 
   if (!classId) {
     return (
@@ -232,6 +238,46 @@ export default function StudentDashboardPage() {
         )}
       </section>
 
+      {selectedSubjectId && subjects.length > 0 && (
+        <section aria-labelledby="quarters-heading">
+          <h2
+            id="quarters-heading"
+            className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+          >
+            Choraklar bo‘yicha saralash
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedQuarter('')}
+              className={cn(
+                'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors shadow-sm',
+                selectedQuarter === ''
+                  ? 'border-slate-800 bg-slate-800 text-white dark:border-slate-200 dark:bg-slate-200 dark:text-slate-900'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200',
+              )}
+            >
+              Hammasi
+            </button>
+            {['1', '2', '3', '4'].map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => setSelectedQuarter(q)}
+                className={cn(
+                  'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors shadow-sm',
+                  selectedQuarter === q
+                    ? 'border-sky-600 bg-sky-600 text-white dark:border-sky-500'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200',
+                )}
+              >
+                {q}-chorak
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section aria-labelledby="lessons-heading">
         <h2
           id="lessons-heading"
@@ -246,13 +292,15 @@ export default function StudentDashboardPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">Yuqoridan fanni tanlang.</p>
         ) : loadingLessons ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">Darslar yuklanmoqda…</p>
-        ) : lessons.length === 0 ? (
+        ) : filteredLessons.length === 0 ? (
           <Card className="p-6 text-sm text-slate-600 dark:text-slate-400">
-            Ushbu fan uchun hozircha dars yo‘q.
+            {lessons.length === 0
+              ? 'Ushbu fan uchun hozircha dars yo‘q.'
+              : 'Tanlangan chorak bo‘yicha dars topilmadi.'}
           </Card>
         ) : (
           <ul className="space-y-4">
-            {lessons.map((lesson) => (
+            {filteredLessons.map((lesson) => (
               <li key={lesson.id}>
                 <Card className="p-5 transition hover:border-slate-300 hover:shadow-md dark:hover:border-slate-600">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

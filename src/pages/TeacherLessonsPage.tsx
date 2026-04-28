@@ -10,6 +10,14 @@ import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
 import { getYouTubeEmbedUrl } from '@/utils/youtube'
 import { Modal } from '@/components/Modal'
 import { DocumentViewer } from '@/components/DocumentViewer'
+import { cn } from '@/utils/cn'
+
+function selectClassName(): string {
+  return cn(
+    'mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100',
+    'focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:border-teal-400 dark:focus:ring-teal-400/20',
+  )
+}
 
 function formatWhen(iso: string): string {
   try {
@@ -30,6 +38,10 @@ export default function TeacherLessonsPage() {
   const [error, setError] = useState<string | null>(null)
   const [viewingMaterialUrl, setViewingMaterialUrl] = useState<string | null>(null)
 
+  const [filterClassId, setFilterClassId] = useState('')
+  const [filterSubjectId, setFilterSubjectId] = useState('')
+  const [filterQuarter, setFilterQuarter] = useState('')
+
   const classNameById = useMemo(() => {
     const m = new Map<string, string>()
     for (const c of classes) {
@@ -45,6 +57,15 @@ export default function TeacherLessonsPage() {
     }
     return m
   }, [subjects])
+
+  const filteredLessons = useMemo(() => {
+    return lessons.filter((l) => {
+      if (filterClassId && l.class_id !== filterClassId) return false
+      if (filterSubjectId && l.subject_id !== filterSubjectId) return false
+      if (filterQuarter && String(l.quarter) !== filterQuarter) return false
+      return true
+    })
+  }, [lessons, filterClassId, filterSubjectId, filterQuarter])
 
   const loadData = useCallback(async () => {
     setError(null)
@@ -100,18 +121,82 @@ export default function TeacherLessonsPage() {
       ) : null}
 
       <section aria-labelledby="lessons-heading">
+        <div className="mb-6 flex flex-wrap items-center gap-3 bg-white/50 dark:bg-slate-800/30 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 pl-1">Saralash:</span>
+            <select
+              className={cn(selectClassName(), 'mt-0 !w-auto min-w-[140px] !py-2')}
+              value={filterClassId}
+              onChange={(e) => setFilterClassId(e.target.value)}
+            >
+              <option value="">Barcha sinflar</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <select
+            className={cn(selectClassName(), 'mt-0 !w-auto min-w-[140px] !py-2')}
+            value={filterSubjectId}
+            onChange={(e) => setFilterSubjectId(e.target.value)}
+          >
+            <option value="">Barcha fanlar</option>
+            {subjects.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className={cn(selectClassName(), 'mt-0 !w-auto min-w-[140px] !py-2')}
+            value={filterQuarter}
+            onChange={(e) => setFilterQuarter(e.target.value)}
+          >
+            <option value="">Barcha choraklar</option>
+            <option value="1">1-chorak</option>
+            <option value="2">2-chorak</option>
+            <option value="3">3-chorak</option>
+            <option value="4">4-chorak</option>
+          </select>
+
+          {(filterClassId || filterSubjectId || filterQuarter) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterClassId('')
+                setFilterSubjectId('')
+                setFilterQuarter('')
+              }}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+            >
+              Tozalash
+            </Button>
+          )}
+        </div>
+
         {loading ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">Darslar yuklanmoqda…</p>
-        ) : lessons.length === 0 ? (
+        ) : filteredLessons.length === 0 ? (
           <Card className="p-12 text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-400">Sizda hali darslar yo‘q.</p>
-            <Button as={Link} to="/teacher" className="mt-4">
-              Yangi dars yaratish
-            </Button>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {lessons.length === 0 
+                ? 'Sizda hali darslar yo‘q.' 
+                : 'Tanlangan filtrlar bo‘yicha dars topilmadi.'}
+            </p>
+            {lessons.length === 0 && (
+              <Button as={Link} to="/teacher" className="mt-4">
+                Yangi dars yaratish
+              </Button>
+            )}
           </Card>
         ) : (
           <ul className="space-y-4">
-            {lessons.map((lesson) => (
+            {filteredLessons.map((lesson) => (
               <li key={lesson.id}>
                 <Card className="border-teal-100/80 p-5 dark:border-teal-900/40">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -208,7 +293,7 @@ export default function TeacherLessonsPage() {
         open={!!viewingMaterialUrl}
         title="Materialni ko‘rish"
         onClose={() => setViewingMaterialUrl(null)}
-        className="!max-w-5xl w-full"
+        className="!max-w-[95vw] w-full"
       >
         {viewingMaterialUrl && <DocumentViewer url={viewingMaterialUrl} />}
       </Modal>

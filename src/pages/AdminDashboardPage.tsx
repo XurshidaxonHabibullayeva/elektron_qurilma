@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { Modal } from '@/components/Modal'
@@ -112,6 +112,12 @@ export default function AdminDashboardPage() {
   const [ssLoading, setSsLoading] = useState(false)
   const [ssSaving, setSsSaving] = useState(false)
   const [ssError, setSsError] = useState<string | null>(null)
+
+  const [userSearchQuery, setUserSearchQuery] = useState('')
+  const [userRoleFilter, setUserRoleFilter] = useState<'all' | 'admin' | 'teacher' | 'student'>('all')
+
+  const [studentSearchQuery, setStudentSearchQuery] = useState('')
+  const [studentClassFilter, setStudentClassFilter] = useState('')
 
 
   const loadAll = useCallback(async () => {
@@ -350,11 +356,37 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const studentRows = [...registeredUsers.filter((u) => u.role === 'student')].sort((a, b) => {
-    const an = (a.full_name ?? '').trim() || a.email
-    const bn = (b.full_name ?? '').trim() || b.email
-    return an.localeCompare(bn, 'uz')
-  })
+  const filteredUsers = useMemo(() => {
+    return registeredUsers.filter((u) => {
+      const matchRole = userRoleFilter === 'all' || u.role === userRoleFilter
+      const query = userSearchQuery.toLowerCase().trim()
+      const matchSearch =
+        !query ||
+        (u.email || '').toLowerCase().includes(query) ||
+        (u.full_name || '').toLowerCase().includes(query) ||
+        (u.id || '').toLowerCase().includes(query)
+      return matchRole && matchSearch
+    })
+  }, [registeredUsers, userRoleFilter, userSearchQuery])
+
+  const studentRows = useMemo(() => {
+    return registeredUsers
+      .filter((u) => u.role === 'student')
+      .filter((u) => {
+        const query = studentSearchQuery.toLowerCase().trim()
+        const matchSearch =
+          !query ||
+          (u.email || '').toLowerCase().includes(query) ||
+          (u.full_name || '').toLowerCase().includes(query)
+        const matchClass = !studentClassFilter || u.class_id === studentClassFilter
+        return matchSearch && matchClass
+      })
+      .sort((a, b) => {
+        const an = (a.full_name ?? '').trim() || a.email
+        const bn = (b.full_name ?? '').trim() || b.email
+        return an.localeCompare(bn, 'uz')
+      })
+  }, [registeredUsers, studentSearchQuery, studentClassFilter])
 
   async function handleAddSubject(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -938,6 +970,44 @@ export default function AdminDashboardPage() {
             Ro‘yxatni yangilash
           </Button>
         </div>
+
+        <div className="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/50 px-5 py-4 sm:flex-row sm:items-center dark:border-slate-700/80 dark:bg-slate-800/30">
+          <div className="relative flex-1">
+            <TextField
+              label="Qidirish"
+              id="user-search"
+              placeholder="Email, ism yoki ID bo‘yicha qidirish…"
+              value={userSearchQuery}
+              onChange={(e) => setUserSearchQuery(e.target.value)}
+              className="mt-0"
+            />
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Rol:</span>
+            <select
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+              value={userRoleFilter}
+              onChange={(e) => setUserRoleFilter(e.target.value as 'all' | 'admin' | 'teacher' | 'student')}
+            >
+              <option value="all">Barchasi</option>
+              <option value="admin">Admin</option>
+              <option value="teacher">O‘qituvchi</option>
+              <option value="student">O‘quvchi</option>
+            </select>
+            {(userSearchQuery || userRoleFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setUserSearchQuery('')
+                  setUserRoleFilter('all')
+                }}
+              >
+                Tozalash
+              </Button>
+            )}
+          </div>
+        </div>
         {usersLoadError ? (
           <div className="border-b border-red-100 bg-red-50/60 px-5 py-3 text-sm text-red-900 dark:border-red-900/30 dark:bg-red-950/40 dark:text-red-100">
             {usersLoadError}
@@ -996,14 +1066,14 @@ export default function AdminDashboardPage() {
                     Yuklanmoqda…
                   </td>
                 </tr>
-              ) : registeredUsers.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-8 text-center text-slate-500 dark:text-slate-400">
-                    Hozircha foydalanuvchi yo‘q.
+                    {registeredUsers.length === 0 ? 'Hozircha foydalanuvchi yo‘q.' : 'Qidiruv bo‘yicha foydalanuvchi topilmadi.'}
                   </td>
                 </tr>
               ) : (
-                registeredUsers.map((u) => {
+                filteredUsers.map((u) => {
                   const isAdmin = u.role === 'admin'
                   const selectValue = (roleDraft[u.id] ?? (u.role === 'teacher' ? 'teacher' : 'student')) as
                     | 'student'
@@ -1117,6 +1187,46 @@ export default function AdminDashboardPage() {
             Ro‘yxatni yangilash
           </Button>
         </div>
+
+        <div className="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/50 px-5 py-4 sm:flex-row sm:items-center dark:border-slate-700/80 dark:bg-slate-800/30">
+          <div className="relative flex-1">
+            <TextField
+              label="O‘quvchini qidirish"
+              id="student-search"
+              placeholder="Email yoki ism bo‘yicha…"
+              value={studentSearchQuery}
+              onChange={(e) => setStudentSearchQuery(e.target.value)}
+              className="mt-0"
+            />
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Sinf:</span>
+            <select
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+              value={studentClassFilter}
+              onChange={(e) => setStudentClassFilter(e.target.value)}
+            >
+              <option value="">Barchasi</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {(studentSearchQuery || studentClassFilter) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setStudentSearchQuery('')
+                  setStudentClassFilter('')
+                }}
+              >
+                Tozalash
+              </Button>
+            )}
+          </div>
+        </div>
         {assignClassError ? (
           <div className="border-b border-red-100 bg-red-50/60 px-5 py-3 text-sm text-red-900 dark:border-red-900/30 dark:bg-red-950/40 dark:text-red-100">
             <span className="font-semibold">Sinf biriktirilmadi. </span>
@@ -1142,8 +1252,9 @@ export default function AdminDashboardPage() {
               ) : studentRows.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="px-5 py-8 text-center text-slate-500 dark:text-slate-400">
-                    Hozircha <code className="font-mono text-xs">role = student</code> profillar yo‘q.
-                    Yuqoridagi jadvaldan foydalanuvchini o‘quvchi qilib belgilang.
+                    {registeredUsers.filter((u) => u.role === 'student').length === 0
+                      ? 'Hozircha o‘quvchi profillar yo‘q.'
+                      : 'Filtr bo‘yicha o‘quvchi topilmadi.'}
                   </td>
                 </tr>
               ) : (
