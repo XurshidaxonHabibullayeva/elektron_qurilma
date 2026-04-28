@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { FileText } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { LessonQuizSection } from '@/components/LessonQuizSection'
@@ -178,18 +179,26 @@ export default function LessonPage() {
       </Card>
 
       {L.material_url ? (
-        <Card className="space-y-3 p-6 sm:p-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Qo‘shimcha material
-          </h2>
-          <a
-            href={L.material_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex text-base font-medium text-slate-900 underline-offset-2 hover:underline dark:text-white"
-          >
-            Material havolasini ochish
-          </a>
+        <Card className="space-y-4 p-6 sm:p-8 border-teal-100/80 dark:border-teal-900/40 bg-teal-50/30 dark:bg-teal-950/20">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Qo‘shimcha material
+              </h2>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Darsga biriktirilgan qo'shimcha fayl yoki hujjat.
+              </p>
+            </div>
+            <a
+              href={L.material_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:bg-teal-700 dark:hover:bg-teal-600"
+            >
+              <FileText className="size-5" />
+              Faylni ochish / Yuklab olish
+            </a>
+          </div>
         </Card>
       ) : null}
 
