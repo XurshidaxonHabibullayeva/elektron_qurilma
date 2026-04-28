@@ -134,7 +134,7 @@ export async function uploadMaterial(file: File): Promise<string> {
 
   const { error: uploadError } = await supabase.storage
     .from('materials')
-    .upload(filePath, file)
+    .upload(filePath, file, { contentType: file.type, upsert: true })
 
   if (uploadError) {
     throw new Error(uploadError.message)

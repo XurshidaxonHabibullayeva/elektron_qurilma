@@ -10,8 +10,8 @@ export function DocumentViewer({ url }: DocumentViewerProps) {
 
   if (!url) return null
 
-  // Clean the URL from query parameters if any (e.g. ?t=123)
-  const cleanUrl = url.split('?')[0]
+  // Clean the URL from query parameters if any
+  const cleanUrl = url?.split('?')[0] || ''
   const extension = cleanUrl.split('.').pop()?.toLowerCase() || ''
 
   const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)
@@ -28,9 +28,17 @@ export function DocumentViewer({ url }: DocumentViewerProps) {
           onError={() => setError(true)}
         />
         {error && (
-          <p className="p-4 text-center text-sm text-red-500">
-            Rasmni yuklashda xatolik yuz berdi.
-          </p>
+          <div className="p-8 text-center">
+            <p className="mb-4 text-sm text-red-500">Rasmni yuklashda xatolik yuz berdi.</p>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-teal-600 hover:underline"
+            >
+              Asl manbani ochish
+            </a>
+          </div>
         )}
       </div>
     )
@@ -38,13 +46,21 @@ export function DocumentViewer({ url }: DocumentViewerProps) {
 
   if (isPdf) {
     return (
-      <div className="h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
-        <iframe
-          src={url}
-          className="size-full border-0"
-          title="PDF Viewer"
+      <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+        <object
+          data={url}
+          type="application/pdf"
+          className="size-full"
           onLoad={() => setLoading(false)}
-        />
+        >
+          {/* Fallback if object fails to render PDF */}
+          <iframe
+            src={url}
+            className="size-full border-0"
+            title="PDF Viewer"
+            onLoad={() => setLoading(false)}
+          />
+        </object>
       </div>
     )
   }
@@ -55,10 +71,7 @@ export function DocumentViewer({ url }: DocumentViewerProps) {
       <div className="relative h-[600px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50">
-            <div
-              className="size-8 animate-spin rounded-full border-2 border-slate-300 border-t-teal-600 dark:border-slate-600 dark:border-t-teal-400"
-              role="status"
-            ></div>
+            <div className="size-8 animate-spin rounded-full border-2 border-slate-300 border-t-teal-600 dark:border-slate-600 dark:border-t-teal-400"></div>
           </div>
         )}
         <iframe
