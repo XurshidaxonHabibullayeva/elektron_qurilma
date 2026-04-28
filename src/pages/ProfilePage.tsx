@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { TextField } from '@/components/TextField'
 import { useAuth } from '@/hooks/useAuth'
 import { updateProfile } from '@/services/profile.service'
+import { supabase } from '@/services/supabase'
 
 export default function ProfilePage() {
   const { user, profile, refreshProfile } = useAuth()
@@ -22,7 +23,14 @@ export default function ProfilePage() {
     setSuccess(false)
 
     try {
+      // 1. Profil jadvalini yangilash
       await updateProfile(user.id, fullName)
+      
+      // 2. Auth metadata-ni yangilash (sinxronizatsiya uchun)
+      await supabase.auth.updateUser({
+        data: { full_name: fullName.trim() }
+      })
+
       await refreshProfile()
       setSuccess(true)
     } catch (err) {
