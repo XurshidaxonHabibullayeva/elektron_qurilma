@@ -5,7 +5,7 @@ import { DashboardShell } from '@/components/DashboardShell'
 export function StudentLayout() {
   return (
     <DashboardShell
-      brand={{ title: "O'quvchi", to: '/student' }}
+      brand={{ title: 'FlipEdu', to: '/student' }}
       accent="sky"
       nav={[
         { to: '/student', label: 'Bosh sahifa', icon: <Home className="size-5" />, end: true },

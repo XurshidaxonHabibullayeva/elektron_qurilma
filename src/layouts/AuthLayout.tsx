@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { FlipEduLogo } from '@/components/FlipEduLogo'
 
 export function AuthLayout() {
   return (
@@ -15,9 +16,12 @@ export function AuthLayout() {
         <div className="mb-10 space-y-3 text-center">
           <Link
             to="/"
-            className="block text-sm font-semibold tracking-tight text-slate-900 dark:text-white"
+            className="flex flex-col items-center gap-4 group"
           >
-            Elektron qo‘llanma
+            <FlipEduLogo className="size-24 transition-transform duration-500 group-hover:scale-110" />
+            <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              FlipEdu
+            </span>
           </Link>
           <Link
             to="/guide"

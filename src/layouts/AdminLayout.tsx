@@ -5,7 +5,7 @@ import { DashboardShell } from '@/components/DashboardShell'
 export function AdminLayout() {
   return (
     <DashboardShell
-      brand={{ title: 'Administrator', to: '/admin' }}
+      brand={{ title: 'FlipEdu', to: '/admin' }}
       accent="violet"
       nav={[
         { to: '/admin', label: 'Bosh sahifa', icon: <Shield className="size-5" />, end: true },

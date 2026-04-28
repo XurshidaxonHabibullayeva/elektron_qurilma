@@ -5,7 +5,7 @@ import { DashboardShell } from '@/components/DashboardShell'
 export function TeacherLayout() {
   return (
     <DashboardShell
-      brand={{ title: "O'qituvchi", to: '/teacher' }}
+      brand={{ title: 'FlipEdu', to: '/teacher' }}
       accent="teal"
       nav={[
         { to: '/teacher', label: 'Bosh sahifa', icon: <Home className="size-5" />, end: true },

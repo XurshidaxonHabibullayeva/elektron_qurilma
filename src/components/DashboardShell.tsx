@@ -1,20 +1,21 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  LogOut, 
-  Menu, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Menu,
   X
 } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
+import { FlipEduLogo } from '@/components/FlipEduLogo'
 
-export type ShellNavItem = { 
-  to: string; 
-  label: string; 
+export type ShellNavItem = {
+  to: string;
+  label: string;
   end?: boolean;
   icon?: ReactNode;
 }
@@ -79,7 +80,7 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
           className="flex items-center gap-3 group"
           onClick={() => setSidebarOpen(false)}
         >
-          <div className={cn('size-3 shrink-0 rounded-full transition-transform group-hover:scale-125', a.dot)} />
+          <FlipEduLogo className="size-10 shrink-0 transition-transform duration-300 group-hover:scale-110" />
           {!isCollapsed && (
             <span className="text-xl font-bold tracking-tight bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent dark:from-white dark:to-slate-400">
               {brand.title}
@@ -108,19 +109,19 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
       <div className="mt-auto space-y-4 pt-6 border-t border-slate-200/50 dark:border-slate-800/50">
         <div className={cn("flex flex-col gap-4", isCollapsed ? "items-center" : "px-3")}>
           <div className={cn("flex items-center gap-3", isCollapsed ? "flex-col" : "")}>
-             <ThemeToggle className={cn("size-10 transition-transform hover:scale-105", isCollapsed ? "" : "shrink-0")} />
-             {!isCollapsed && (
-               <div className="min-w-0 flex-1">
-                 <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                   {fullName || 'Foydalanuvchi'}
-                 </p>
-                 <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                   {user?.email}
-                 </p>
-               </div>
-             )}
+            <ThemeToggle className={cn("size-10 transition-transform hover:scale-105", isCollapsed ? "" : "shrink-0")} />
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                  {fullName || 'Foydalanuvchi'}
+                </p>
+                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                  {user?.email}
+                </p>
+              </div>
+            )}
           </div>
-          
+
           <Button
             type="button"
             variant="secondary"
@@ -161,17 +162,17 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
         >
           {sidebarOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        
+
         <NavLink
           to={brand.to}
           className={cn('flex items-center gap-2 text-lg font-bold tracking-tight', a.mobileTitle)}
         >
-          <div className={cn('size-2 rounded-full', a.dot)} />
-          {brand.title}
+          <FlipEduLogo className="size-8 shrink-0" />
+          FlipEdu
         </NavLink>
-        
+
         <div className="flex items-center gap-2">
-           <ThemeToggle className="size-9" />
+          <ThemeToggle className="size-9" />
         </div>
       </header>
 
@@ -195,7 +196,7 @@ export function DashboardShell({ brand, nav, accent, children }: DashboardShellP
           {/* Decorative gradients */}
           <div className="pointer-events-none absolute -top-24 right-0 size-96 bg-sky-500/10 blur-[100px] dark:bg-sky-500/5" />
           <div className="pointer-events-none absolute -bottom-24 left-0 size-96 bg-violet-500/10 blur-[100px] dark:bg-violet-500/5" />
-          
+
           <div className="relative z-10 flex-1 px-4 py-8 sm:px-6 lg:px-10">
             <div className="mx-auto w-full max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
               {children}

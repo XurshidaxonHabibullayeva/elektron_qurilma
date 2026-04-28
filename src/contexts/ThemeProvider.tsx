@@ -10,7 +10,7 @@ import {
   type ThemePreference,
 } from '@/contexts/theme-context'
 
-const STORAGE_KEY = 'elektron-theme'
+const STORAGE_KEY = 'flipedu-theme'
 
 function readStored(): ThemePreference {
   try {
