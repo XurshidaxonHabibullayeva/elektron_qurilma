@@ -1,4 +1,12 @@
--- 1. Profiles table and triggers
+-- 1. Barcha eski siyosatlarni tozalash (Recursion xatoligini yo'qotish uchun)
+drop policy if exists "profiles_select_all" on public.profiles;
+drop policy if exists "profiles_select_own" on public.profiles;
+drop policy if exists "profiles_insert_own" on public.profiles;
+drop policy if exists "profiles_update_own" on public.profiles;
+drop policy if exists "admin_all_profiles" on public.profiles;
+drop policy if exists "admin_manage_all" on public.profiles;
+
+-- 2. Jadvalni yaratish (agar yo'q bo'lsa)
 create table if not exists public.profiles (
   id uuid not null references auth.users (id) on delete cascade,
   full_name text,
@@ -11,18 +19,27 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
--- Basic Policies for Profiles (Drop and Recreate)
-drop policy if exists "profiles_select_all" on public.profiles;
-drop policy if exists "profiles_select_own" on public.profiles;
-create policy "profiles_select_all" on public.profiles for select to authenticated using (true);
+-- 3. Toza va sodda siyosatlar (Recursion-siz)
+-- Hamma authenticated foydalanuvchilar profillarni o'qiy olsin
+create policy "profiles_read_policy" 
+  on public.profiles for select 
+  to authenticated 
+  using (true);
 
-drop policy if exists "profiles_insert_own" on public.profiles;
-create policy "profiles_insert_own" on public.profiles for insert to authenticated with check (auth.uid() = id);
+-- Foydalanuvchi faqat o'z profilini yarata olsin
+create policy "profiles_insert_policy" 
+  on public.profiles for insert 
+  to authenticated 
+  with check (auth.uid() = id);
 
-drop policy if exists "profiles_update_own" on public.profiles;
-create policy "profiles_update_own" on public.profiles for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
+-- Foydalanuvchi faqat o'z profilini yangilay olsin (Ism o'zgartirish uchun)
+create policy "profiles_update_policy" 
+  on public.profiles for update 
+  to authenticated 
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
 
--- 3. Classes and Subjects
+-- 4. Classes and Subjects
 create table if not exists public.classes (
   id uuid default gen_random_uuid() primary key,
   name text not null unique,
@@ -44,7 +61,7 @@ create policy "classes_read_all" on public.classes for select to authenticated u
 drop policy if exists "subjects_read_all" on public.subjects;
 create policy "subjects_read_all" on public.subjects for select to authenticated using (true);
 
--- 4. Lessons
+-- 5. Lessons
 create table if not exists public.lessons (
   id uuid default gen_random_uuid() primary key,
   teacher_id uuid references auth.users(id) not null,
@@ -66,7 +83,7 @@ create policy "lessons_read_all" on public.lessons for select to authenticated u
 drop policy if exists "lessons_teacher_all" on public.lessons;
 create policy "lessons_teacher_all" on public.lessons for all to authenticated using (auth.uid() = teacher_id);
 
--- 5. Quiz Results
+-- 6. Quiz Results
 create table if not exists public.results (
   id uuid default gen_random_uuid() primary key,
   student_id uuid references auth.users(id) not null,
@@ -85,7 +102,7 @@ create policy "results_read_own" on public.results for select to authenticated u
 drop policy if exists "results_insert_own" on public.results;
 create policy "results_insert_own" on public.results for insert to authenticated with check (auth.uid() = student_id);
 
--- 6. Trigger for new user
+-- 7. Trigger for new user
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -110,7 +127,7 @@ create trigger on_auth_user_created
   for each row
   execute function public.handle_new_user();
 
--- 7. Grants
+-- 8. Grants
 grant all on all tables in schema public to authenticated;
 grant all on all sequences in schema public to authenticated;
 grant all on all functions in schema public to authenticated;
