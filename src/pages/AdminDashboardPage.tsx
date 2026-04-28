@@ -525,15 +525,7 @@ export default function AdminDashboardPage() {
         description={
           <>
             Maktab sinflari (masalan, 5-sinf) va fanlar (masalan, Matematika) — qo‘shish, tahrirlash va o‘chirish.
-            Ma’lumotlar Supabase jadvalida saqlanadi:{' '}
-            <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-              classes
-            </code>{' '}
-            va{' '}
-            <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-              subjects
-            </code>
-            .
+
           </>
         }
       />

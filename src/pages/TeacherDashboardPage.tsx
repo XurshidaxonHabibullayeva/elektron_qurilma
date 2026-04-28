@@ -318,11 +318,6 @@ export default function TeacherDashboardPage() {
           <>
             Sinf va fanni tanlab, video va material havolalari bilan yangi dars yarating.
             Administrator sizga fanlar biriktirgan bo‘lsa, fan ro‘yxati shu fanlar bilan cheklanadi.
-            Ma’lumotlar Supabase{' '}
-            <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-              lessons
-            </code>{' '}
-            jadvalida saqlanadi.
           </>
         }
       />
