@@ -7,7 +7,7 @@ import { StatCard } from '@/components/StatCard'
 import { TextField } from '@/components/TextField'
 import { useAuth } from '@/hooks/useAuth'
 import { fetchClasses, fetchSubjects } from '@/services/classSubject.service'
-import { createLesson, deleteLesson, fetchMyLessons, updateLesson } from '@/services/teacherLesson.service'
+import { createLesson, deleteLesson, fetchMyLessons, updateLesson, uploadMaterial } from '@/services/teacherLesson.service'
 import { fetchTeacherSubjectIds } from '@/services/teacherSubject.service'
 import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
 import { cn } from '@/utils/cn'
@@ -51,6 +51,7 @@ export default function TeacherDashboardPage() {
   const [description, setDescription] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [materialUrl, setMaterialUrl] = useState('')
+  const [materialFile, setMaterialFile] = useState<File | null>(null)
   const [quarter, setQuarter] = useState<string>('')
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -189,6 +190,11 @@ export default function TeacherDashboardPage() {
     }
     setSaving(true)
     try {
+      let finalMaterialUrl = materialUrl.trim() || null
+      if (materialFile) {
+        finalMaterialUrl = await uploadMaterial(materialFile)
+      }
+
       const row = await createLesson({
         teacherId,
         classId,
@@ -196,7 +202,7 @@ export default function TeacherDashboardPage() {
         title,
         description: description.trim() || null,
         videoUrl: videoUrl.trim() || null,
-        materialUrl: materialUrl.trim() || null,
+        materialUrl: finalMaterialUrl,
         quarter: quarter ? parseInt(quarter, 10) : null,
       })
 
@@ -207,6 +213,7 @@ export default function TeacherDashboardPage() {
       setDescription('')
       setVideoUrl('')
       setMaterialUrl('')
+      setMaterialFile(null)
       setQuarter('')
     } catch (err) {
 
@@ -223,6 +230,11 @@ export default function TeacherDashboardPage() {
     setFormError(null)
     setSaving(true)
     try {
+      let finalMaterialUrl = materialUrl.trim() || null
+      if (materialFile) {
+        finalMaterialUrl = await uploadMaterial(materialFile)
+      }
+
       const updated = await updateLesson({
         id: editingLessonId,
         classId,
@@ -230,7 +242,7 @@ export default function TeacherDashboardPage() {
         title,
         description: description.trim() || null,
         videoUrl: videoUrl.trim() || null,
-        materialUrl: materialUrl.trim() || null,
+        materialUrl: finalMaterialUrl,
         quarter: quarter ? parseInt(quarter, 10) : null,
       })
 
@@ -264,6 +276,7 @@ export default function TeacherDashboardPage() {
     setDescription('')
     setVideoUrl('')
     setMaterialUrl('')
+    setMaterialFile(null)
     setQuarter('')
   }
 
@@ -460,15 +473,48 @@ export default function TeacherDashboardPage() {
             onChange={(ev) => setVideoUrl(ev.target.value)}
             placeholder="https://…"
           />
-          <TextField
-            id="lesson-material"
-            label="Material havolasi (URL)"
-            name="materialUrl"
-            type="url"
-            value={materialUrl}
-            onChange={(ev) => setMaterialUrl(ev.target.value)}
-            placeholder="https://… (PDF, taqdimot va hokazo)"
-          />
+          <div className="space-y-1.5">
+            <label
+              htmlFor="lesson-material"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Material (PDF, Word, Taqdimot va hokazo)
+            </label>
+            {materialUrl && !materialFile && (
+              <div className="mb-2 text-sm flex items-center gap-2">
+                <span className="text-slate-600 dark:text-slate-400">Joriy material:</span>
+                <a href={materialUrl} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-700 underline dark:text-teal-400">
+                  Ko‘rish
+                </a>
+                <button
+                  type="button"
+                  className="text-red-500 hover:text-red-700 dark:hover:text-red-400"
+                  onClick={() => {
+                    setMaterialUrl('')
+                    setMaterialFile(null)
+                  }}
+                >
+                  O‘chirish
+                </button>
+              </div>
+            )}
+            <input
+              id="lesson-material"
+              name="materialFile"
+              type="file"
+              onChange={(ev) => {
+                if (ev.target.files && ev.target.files[0]) {
+                  setMaterialFile(ev.target.files[0])
+                } else {
+                  setMaterialFile(null)
+                }
+              }}
+              className={cn(
+                'block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100',
+                'file:mr-4 file:rounded-md file:border-0 file:bg-teal-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-teal-700 hover:file:bg-teal-100 dark:file:bg-teal-900/30 dark:file:text-teal-300 dark:hover:file:bg-teal-900/50'
+              )}
+            />
+          </div>
           {formError ? (
             <p className="text-sm text-red-700 dark:text-red-300" role="alert">
               {formError}

@@ -127,3 +127,20 @@ export async function deleteLesson(lessonId: string): Promise<void> {
   }
 }
 
+export async function uploadMaterial(file: File): Promise<string> {
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+  const filePath = `materials/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('materials')
+    .upload(filePath, file)
+
+  if (uploadError) {
+    throw new Error(uploadError.message)
+  }
+
+  const { data } = supabase.storage.from('materials').getPublicUrl(filePath)
+  return data.publicUrl
+}
+
