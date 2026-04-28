@@ -19,6 +19,8 @@ export type AuthContextValue = {
   signOut: () => Promise<void>
   /** Parolni tiklash xati; redirect URL loyiha + /auth/update-password bo‘lishi kerak. */
   resetPasswordForEmail: (email: string) => Promise<void>
+  /** Re-loads current user's profile from the database. */
+  refreshProfile: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

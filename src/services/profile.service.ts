@@ -80,3 +80,13 @@ export async function loadOrCreateProfile(userId: string): Promise<ProfileRow> {
     class_id: created.class_id ?? null,
   }
 }
+export async function updateProfile(userId: string, fullName: string): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ full_name: fullName.trim() })
+    .eq('id', userId)
+
+  if (error) {
+    throwProfileError(error)
+  }
+}

@@ -19,6 +19,7 @@ import TeacherDashboardPage from '@/pages/TeacherDashboardPage'
 import TeacherQuizPage from '@/pages/TeacherQuizPage'
 import TeacherResultsPage from '@/pages/TeacherResultsPage'
 import TeacherLessonsPage from '@/pages/TeacherLessonsPage'
+import ProfilePage from '@/pages/ProfilePage'
 import GuidePage from '@/pages/GuidePage'
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
         <Route element={<RoleGuardLayout allowed={['admin']} />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/profile" element={<ProfilePage />} />
           </Route>
         </Route>
         <Route element={<RoleGuardLayout allowed={['teacher']} />}>
@@ -49,7 +51,7 @@ export default function App() {
             <Route path="/teacher/lessons" element={<TeacherLessonsPage />} />
             <Route path="/teacher/results" element={<TeacherResultsPage />} />
             <Route path="/teacher/lessons/:lessonId/quiz" element={<TeacherQuizPage />} />
-
+            <Route path="/teacher/profile" element={<ProfilePage />} />
           </Route>
         </Route>
         <Route element={<RoleGuardLayout allowed={['student']} />}>
@@ -57,6 +59,7 @@ export default function App() {
             <Route path="/student" element={<StudentDashboardPage />} />
             <Route path="/student/results" element={<StudentResultsPage />} />
             <Route path="/student/lessons/:lessonId" element={<LessonPage />} />
+            <Route path="/student/profile" element={<ProfilePage />} />
           </Route>
         </Route>
       </Route>

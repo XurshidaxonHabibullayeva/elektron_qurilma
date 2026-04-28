@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { Home, Video, BarChart2, BookOpen } from 'lucide-react'
+import { Home, Video, BarChart2, BookOpen, User } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 
 export function TeacherLayout() {
@@ -11,6 +11,7 @@ export function TeacherLayout() {
         { to: '/teacher', label: 'Bosh sahifa', icon: <Home className="size-5" />, end: true },
         { to: '/teacher/lessons', label: 'Mening darslarim', icon: <Video className="size-5" /> },
         { to: '/teacher/results', label: 'Natijalar', icon: <BarChart2 className="size-5" /> },
+        { to: '/teacher/profile', label: 'Profil', icon: <User className="size-5" /> },
         { to: '/guide', label: "Yo'riqnoma", icon: <BookOpen className="size-5" /> },
       ]}
     >

@@ -130,6 +130,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const refreshProfile = useCallback(async () => {
+    const uid = session?.user?.id
+    if (!uid) return
+    try {
+      const p = await loadOrCreateProfile(uid)
+      setProfile(p)
+      setProfileGate('ready')
+    } catch (err) {
+      console.error('[AuthProvider] refreshProfile failed:', err)
+      setProfileGate('error')
+    }
+  }, [session?.user?.id])
+
   const bootstrapping =
     !!session?.user?.id && (profileGate === 'loading' || profileGate === 'none')
   const profileError = !!session?.user?.id && profileGate === 'error'
@@ -145,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resetPasswordForEmail,
+      refreshProfile,
     }),
     [
       session,
@@ -155,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resetPasswordForEmail,
+      refreshProfile,
     ],
   )
 
