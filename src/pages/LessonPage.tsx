@@ -7,6 +7,7 @@ import { LessonQuizSection } from '@/components/LessonQuizSection'
 import { fetchLessonById } from '@/services/studentPortal.service'
 import type { TeacherLessonRow } from '@/types'
 import { getYouTubeEmbedUrl } from '@/utils/youtube'
+import { DocumentViewer } from '@/components/DocumentViewer'
 
 function formatWhen(iso: string): string {
   try {
@@ -180,13 +181,13 @@ export default function LessonPage() {
 
       {L.material_url ? (
         <Card className="space-y-4 p-6 sm:p-8 border-teal-100/80 dark:border-teal-900/40 bg-teal-50/30 dark:bg-teal-950/20">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Qo‘shimcha material
               </h2>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                Darsga biriktirilgan qo'shimcha fayl yoki hujjat.
+                Darsga biriktirilgan fayl. Uni shu yerda o‘qishingiz yoki yuklab olishingiz mumkin.
               </p>
             </div>
             <a
@@ -196,9 +197,11 @@ export default function LessonPage() {
               className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:bg-teal-700 dark:hover:bg-teal-600"
             >
               <FileText className="size-5" />
-              Faylni ochish / Yuklab olish
+              Yuklab olish
             </a>
           </div>
+          
+          <DocumentViewer url={L.material_url} />
         </Card>
       ) : null}
 

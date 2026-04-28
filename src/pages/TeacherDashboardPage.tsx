@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { StatCard } from '@/components/StatCard'
 import { TextField } from '@/components/TextField'
 import { useAuth } from '@/hooks/useAuth'
+import { Modal } from '@/components/Modal'
+import { DocumentViewer } from '@/components/DocumentViewer'
 import { fetchClasses, fetchSubjects } from '@/services/classSubject.service'
 import { createLesson, deleteLesson, fetchMyLessons, updateLesson, uploadMaterial } from '@/services/teacherLesson.service'
 import { fetchTeacherSubjectIds } from '@/services/teacherSubject.service'
@@ -57,6 +59,7 @@ export default function TeacherDashboardPage() {
 
   const [saving, setSaving] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
+  const [viewingMaterialUrl, setViewingMaterialUrl] = useState<string | null>(null)
 
   const classNameById = useMemo(() => {
     const m = new Map<string, string>()
@@ -622,14 +625,13 @@ export default function TeacherDashboardPage() {
                       <span className="text-slate-400 dark:text-slate-500">Video yo‘q</span>
                     )}
                     {lesson.material_url ? (
-                      <a
-                        href={lesson.material_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => setViewingMaterialUrl(lesson.material_url)}
                         className="font-medium text-teal-800 underline-offset-2 hover:underline dark:text-teal-300"
                       >
-                        Material
-                      </a>
+                        Materialni ko‘rish
+                      </button>
                     ) : (
                       <span className="text-slate-400 dark:text-slate-500">Material yo‘q</span>
                     )}
@@ -665,6 +667,15 @@ export default function TeacherDashboardPage() {
           </ul>
         )}
       </section>
+
+      <Modal
+        open={!!viewingMaterialUrl}
+        title="Materialni ko‘rish"
+        onClose={() => setViewingMaterialUrl(null)}
+        className="!max-w-5xl w-full"
+      >
+        {viewingMaterialUrl && <DocumentViewer url={viewingMaterialUrl} />}
+      </Modal>
     </div>
   )
 }

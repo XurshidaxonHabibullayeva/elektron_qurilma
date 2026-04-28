@@ -8,6 +8,8 @@ import { fetchClasses, fetchSubjects } from '@/services/classSubject.service'
 import { deleteLesson, fetchMyLessons } from '@/services/teacherLesson.service'
 import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
 import { getYouTubeEmbedUrl } from '@/utils/youtube'
+import { Modal } from '@/components/Modal'
+import { DocumentViewer } from '@/components/DocumentViewer'
 
 function formatWhen(iso: string): string {
   try {
@@ -26,6 +28,7 @@ export default function TeacherLessonsPage() {
   const [lessons, setLessons] = useState<TeacherLessonRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [viewingMaterialUrl, setViewingMaterialUrl] = useState<string | null>(null)
 
   const classNameById = useMemo(() => {
     const m = new Map<string, string>()
@@ -160,14 +163,13 @@ export default function TeacherLessonsPage() {
                       </a>
                     )}
                     {lesson.material_url && (
-                      <a
-                        href={lesson.material_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => setViewingMaterialUrl(lesson.material_url)}
                         className="font-medium text-teal-800 underline-offset-2 hover:underline dark:text-teal-300"
                       >
-                        Material
-                      </a>
+                        Materialni ko‘rish
+                      </button>
                     )}
                     <Link
                       to={`/teacher/lessons/${lesson.id}/quiz`}
@@ -201,6 +203,15 @@ export default function TeacherLessonsPage() {
           </ul>
         )}
       </section>
+
+      <Modal
+        open={!!viewingMaterialUrl}
+        title="Materialni ko‘rish"
+        onClose={() => setViewingMaterialUrl(null)}
+        className="!max-w-5xl w-full"
+      >
+        {viewingMaterialUrl && <DocumentViewer url={viewingMaterialUrl} />}
+      </Modal>
     </div>
   )
 }
