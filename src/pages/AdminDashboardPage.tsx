@@ -17,9 +17,9 @@ import {
   fetchTeacherSubjectIds,
 } from '@/services/teacherSubject.service'
 import {
-  adminSetStudentSubjects,
-  fetchStudentSubjectIds,
-} from '@/services/studentSubject.service'
+  adminSetClassSubjects,
+  fetchClassSubjectIds,
+} from '@/services/classSubjectAssignment.service'
 
 import {
   createClass,
@@ -107,11 +107,11 @@ export default function AdminDashboardPage() {
   const [tsSaving, setTsSaving] = useState(false)
   const [tsError, setTsError] = useState<string | null>(null)
 
-  const [ssStudentId, setSsStudentId] = useState('')
-  const [ssSubjectIds, setSsSubjectIds] = useState<string[]>([])
-  const [ssLoading, setSsLoading] = useState(false)
-  const [ssSaving, setSsSaving] = useState(false)
-  const [ssError, setSsError] = useState<string | null>(null)
+  const [csClassId, setCsClassId] = useState('')
+  const [csSubjectIds, setCsSubjectIds] = useState<string[]>([])
+  const [csLoading, setCsLoading] = useState(false)
+  const [csSaving, setCsSaving] = useState(false)
+  const [csError, setCsError] = useState<string | null>(null)
 
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [userRoleFilter, setUserRoleFilter] = useState<'all' | 'admin' | 'teacher' | 'student'>('all')
@@ -199,40 +199,40 @@ export default function AdminDashboardPage() {
   }, [tsTeacherId])
 
   useEffect(() => {
-    if (!ssStudentId) {
+    if (!csClassId) {
       void Promise.resolve().then(() => {
-        setSsSubjectIds([])
-        setSsError(null)
-        setSsLoading(false)
+        setCsSubjectIds([])
+        setCsError(null)
+        setCsLoading(false)
       })
       return
     }
     let cancelled = false
     void Promise.resolve().then(() => {
-      setSsLoading(true)
-      setSsError(null)
+      setCsLoading(true)
+      setCsError(null)
     })
-    void fetchStudentSubjectIds(ssStudentId)
+    void fetchClassSubjectIds(csClassId)
       .then((ids) => {
         if (!cancelled) {
-          setSsSubjectIds(ids)
+          setCsSubjectIds(ids)
         }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setSsSubjectIds([])
-          setSsError(err instanceof Error ? err.message : 'Fanlar yuklanmadi')
+          setCsSubjectIds([])
+          setCsError(err instanceof Error ? err.message : 'Fanlar yuklanmadi')
         }
       })
       .finally(() => {
         if (!cancelled) {
-          setSsLoading(false)
+          setCsLoading(false)
         }
       })
     return () => {
       cancelled = true
     }
-  }, [ssStudentId])
+  }, [csClassId])
 
 
   function closeClassModal() {
@@ -305,25 +305,25 @@ export default function AdminDashboardPage() {
     }
   }
 
-  function toggleStudentSubject(subjectId: string) {
-    setSsSubjectIds((prev) =>
+  function toggleClassSubject(subjectId: string) {
+    setCsSubjectIds((prev) =>
       prev.includes(subjectId) ? prev.filter((x) => x !== subjectId) : [...prev, subjectId],
     )
   }
 
-  async function handleSaveStudentSubjects() {
-    if (!ssStudentId) {
+  async function handleSaveClassSubjects() {
+    if (!csClassId) {
       return
     }
-    setSsSaving(true)
-    setSsError(null)
+    setCsSaving(true)
+    setCsError(null)
     try {
-      await adminSetStudentSubjects(ssStudentId, ssSubjectIds)
-      await loadRegisteredUsers()
+      await adminSetClassSubjects(csClassId, csSubjectIds)
+      await loadAll()
     } catch (e) {
-      setSsError(e instanceof Error ? e.message : 'Fanlar saqlanmadi')
+      setCsError(e instanceof Error ? e.message : 'Fanlar saqlanmadi')
     } finally {
-      setSsSaving(false)
+      setCsSaving(false)
     }
   }
 
@@ -1380,81 +1380,79 @@ export default function AdminDashboardPage() {
       </Modal>
       <Card className="p-5 sm:p-6">
         <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-          O‘quvchilarga fan biriktirish
+          Sinfga fan biriktirish
         </h2>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Agar o‘quvchiga fanlar biriktirilsa, u faqat shu fanlarni ko‘radi. Hech narsa
-          tanlanmasa — o‘z sinfidagi barcha darslar mavjud fanlar ko‘rinadi.
+          Sinf uchun tanlangan fanlar o‘quvchi panelida ko‘rinadi. Hech narsa
+          tanlanmasa — o‘quvchilar barcha mavjud darslarni ko‘raveradilar.
         </p>
-        {ssError ? (
+        {csError ? (
           <p className="mt-3 text-sm text-red-700 dark:text-red-300" role="alert">
-            {ssError}
+            {csError}
           </p>
         ) : null}
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
           <div className="min-w-0 flex-1">
             <label
-              htmlFor="ss-student"
+              htmlFor="cs-class"
               className="block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              O‘quvchi
+              Sinf
             </label>
             <select
-              id="ss-student"
+              id="cs-class"
               className="mt-1.5 block w-full max-w-md rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
-              value={ssStudentId}
-              disabled={usersLoading || !!classBusyId || !!subjectBusyId}
+              value={csClassId}
+              disabled={listLoading || !!classBusyId || !!subjectBusyId}
               onChange={(ev) => {
-                setSsStudentId(ev.target.value)
+                setCsClassId(ev.target.value)
               }}
             >
               <option value="">— Tanlang —</option>
-              {registeredUsers
-                .filter((u) => u.role === 'student')
-                .map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {(s.email || s.full_name?.trim() || s.id).slice(0, 72)}
-                  </option>
-                ))}
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
           <Button
             type="button"
             disabled={
-              !ssStudentId ||
-              ssSaving ||
-              ssLoading ||
-              usersLoading ||
+              !csClassId ||
+              csSaving ||
+              csLoading ||
+              listLoading ||
               !!classBusyId ||
               !!subjectBusyId
             }
             onClick={() => {
-              void handleSaveStudentSubjects()
+              void handleSaveClassSubjects()
             }}
           >
-            {ssSaving ? 'Saqlanmoqda…' : 'Saqlash'}
+            {csSaving ? 'Saqlanmoqda…' : 'Saqlash'}
           </Button>
         </div>
 
-        {ssStudentId && (
+        {csClassId && (
           <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800/60">
             <h3 className="mb-3 text-sm font-medium text-slate-900 dark:text-white">
               Fanlarni tanlang:
             </h3>
-            {ssLoading ? (
+            {csLoading ? (
               <p className="text-xs text-slate-500">Yuklanmoqda…</p>
             ) : subjects.length === 0 ? (
               <p className="text-xs text-slate-500">Katalogda fanlar yo‘q.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {subjects.map((s) => {
-                  const isActive = ssSubjectIds.includes(s.id)
+                  const isActive = csSubjectIds.includes(s.id)
                   return (
                     <button
                       key={s.id}
                       type="button"
-                      disabled={ssSaving}
-                      onClick={() => toggleStudentSubject(s.id)}
+                      disabled={csSaving}
+                      onClick={() => toggleClassSubject(s.id)}
                       className={cn(
                         'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                         isActive

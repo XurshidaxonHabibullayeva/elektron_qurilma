@@ -8,8 +8,8 @@ import {
   fetchClassById,
   fetchLessonsForClassAndSubject,
   fetchSubjectsForClass,
+  fetchAssignedSubjectsForClass,
 } from '@/services/studentPortal.service'
-import { fetchStudentSubjectIds } from '@/services/studentSubject.service'
 
 import type { ClassRow, SubjectRow, TeacherLessonRow } from '@/types'
 import { cn } from '@/utils/cn'
@@ -54,23 +54,24 @@ export default function StudentDashboardPage() {
     setError(null)
     setLoadingMeta(true)
     try {
-      const [cls, subs, assignedIds] = await Promise.all([
+      const [cls, allSubs, assignedSubs] = await Promise.all([
         fetchClassById(classId),
-        fetchSubjectsForClass(classId),
-        fetchStudentSubjectIds(user?.id ?? ''),
+        fetchSubjectsForClass(classId), // derived from lessons
+        fetchAssignedSubjectsForClass(classId), // explicit
       ])
 
-      let filteredSubs = subs
-      if (assignedIds.length > 0) {
-        filteredSubs = subs.filter((s) => assignedIds.includes(s.id))
-      }
       setClassRow(cls)
-      setSubjects(filteredSubs)
+      
+      // If there are explicit assignments for the class, use them.
+      // Otherwise fallback to showing subjects that have lessons.
+      const displaySubs = assignedSubs.length > 0 ? assignedSubs : allSubs
+      setSubjects(displaySubs)
+
       setSelectedSubjectId((prev) => {
-        if (prev && filteredSubs.some((s) => s.id === prev)) {
+        if (prev && displaySubs.some((s) => s.id === prev)) {
           return prev
         }
-        return filteredSubs[0]?.id ?? ''
+        return displaySubs[0]?.id ?? ''
       })
 
     } catch (e) {
@@ -295,7 +296,7 @@ export default function StudentDashboardPage() {
         ) : filteredLessons.length === 0 ? (
           <Card className="p-6 text-sm text-slate-600 dark:text-slate-400">
             {lessons.length === 0
-              ? 'Ushbu fan uchun hozircha dars yo‘q.'
+              ? 'Ushbu fan bo‘yicha hozircha mavzular yo‘q.'
               : 'Tanlangan chorak bo‘yicha dars topilmadi.'}
           </Card>
         ) : (

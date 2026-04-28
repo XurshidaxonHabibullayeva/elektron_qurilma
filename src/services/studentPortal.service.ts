@@ -45,6 +45,35 @@ export async function fetchSubjectsForClass(classId: string): Promise<SubjectRow
   return (subjects ?? []) as SubjectRow[]
 }
 
+/** Subjects explicitly assigned to this class via class_subjects table. */
+export async function fetchAssignedSubjectsForClass(classId: string): Promise<SubjectRow[]> {
+  const { data: assignmentRows, error } = await supabase
+    .from('class_subjects')
+    .select('subject_id')
+    .eq('class_id', classId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const ids = (assignmentRows ?? []).map((r) => r.subject_id)
+
+  if (ids.length === 0) {
+    return []
+  }
+
+  const { data: subjects, error: subErr } = await supabase
+    .from('subjects')
+    .select('id, name, created_at')
+    .in('id', ids)
+    .order('name', { ascending: true })
+
+  if (subErr) {
+    throw new Error(subErr.message)
+  }
+  return (subjects ?? []) as SubjectRow[]
+}
+
 export async function fetchLessonsForClassAndSubject(
   classId: string,
   subjectId: string,
