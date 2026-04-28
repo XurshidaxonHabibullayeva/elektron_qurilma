@@ -52,7 +52,7 @@ export async function fetchLessonsForClassAndSubject(
   const { data, error } = await supabase
     .from('lessons')
     .select(
-      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, created_at, updated_at',
+      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, quarter, created_at, updated_at',
     )
     .eq('class_id', classId)
     .eq('subject_id', subjectId)
@@ -68,7 +68,7 @@ export async function fetchLessonById(lessonId: string): Promise<TeacherLessonRo
   const { data, error } = await supabase
     .from('lessons')
     .select(
-      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, created_at, updated_at',
+      'id, teacher_id, class_id, subject_id, title, description, video_url, material_url, quarter, created_at, updated_at',
     )
     .eq('id', lessonId)
     .maybeSingle()
