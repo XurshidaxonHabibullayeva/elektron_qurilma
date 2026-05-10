@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { TextField } from "@/components/TextField";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { fetchClasses, fetchSubjects } from "@/services/classSubject.service";
 import {
   createLesson,
@@ -39,6 +40,7 @@ function selectClassName() {
 
 export default function TeacherDashboardPage() {
   const { user } = useAuth();
+  const { notify } = useNotification();
   const teacherId = user?.id;
 
   const [classes, setClasses] = useState<ClassRow[]>([]);
@@ -191,8 +193,11 @@ export default function TeacherDashboardPage() {
 
       setLessons([lesson, ...lessons]);
       cancelEdit();
+      notify({ message: "Dars muvaffaqiyatli yaratildi.", variant: "success" });
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Dars yaratilmadi");
+      const message = err instanceof Error ? err.message : "Dars yaratilmadi";
+      setFormError(message);
+      notify({ message, variant: "error" });
     } finally {
       setSaving(false);
     }
@@ -224,8 +229,11 @@ export default function TeacherDashboardPage() {
         prev.map((l) => (l.id === updated.id ? updated : l)),
       );
       cancelEdit();
+      notify({ message: "Dars yangilandi.", variant: "success" });
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Dars yangilanmadi");
+      const message = err instanceof Error ? err.message : "Dars yangilanmadi";
+      setFormError(message);
+      notify({ message, variant: "error" });
     } finally {
       setSaving(false);
     }
@@ -263,10 +271,13 @@ export default function TeacherDashboardPage() {
     try {
       await deleteLesson(lessonId);
       setLessons((prev) => prev.filter((l) => l.id !== lessonId));
+      notify({ message: "Dars o‘chirildi.", variant: "success" });
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "O‘chirishda xatolik yuz berdi",
-      );
+      notify({
+        message:
+          err instanceof Error ? err.message : "O‘chirishda xatolik yuz berdi",
+        variant: "error",
+      });
     }
   }
 

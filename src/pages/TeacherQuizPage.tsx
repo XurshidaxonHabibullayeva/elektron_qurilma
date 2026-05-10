@@ -4,6 +4,7 @@ import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { TextField } from '@/components/TextField'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotification } from '@/hooks/useNotification'
 import {
   createQuizQuestion,
   deleteQuizQuestion,
@@ -28,6 +29,7 @@ function formatWhen(iso: string): string {
 export default function TeacherQuizPage() {
   const { lessonId } = useParams<{ lessonId: string }>()
   const { user } = useAuth()
+  const { notify } = useNotification()
   const teacherId = user?.id ?? ''
 
   const [lesson, setLesson] = useState<TeacherLessonRow | null | undefined>(undefined)
@@ -114,8 +116,11 @@ export default function TeacherQuizPage() {
       setO3('')
       setO4('')
       setCorrectOption(1)
+      notify({ message: 'Savol saqlandi.', variant: 'success' })
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Savol saqlanmadi')
+      const message = err instanceof Error ? err.message : 'Savol saqlanmadi'
+      setFormError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setSaving(false)
     }
@@ -127,8 +132,11 @@ export default function TeacherQuizPage() {
     try {
       await deleteQuizQuestion(id)
       setQuestions((prev) => prev.filter((q) => q.id !== id))
+      notify({ message: 'Savol o‘chirildi.', variant: 'success' })
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'O‘chirib bo‘lmadi')
+      const message = err instanceof Error ? err.message : 'O‘chirib bo‘lmadi'
+      setFormError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setDeletingId(null)
     }

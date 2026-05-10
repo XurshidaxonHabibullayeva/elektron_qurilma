@@ -4,11 +4,13 @@ import { Card } from '@/components/Card'
 import { PageHeader } from '@/components/PageHeader'
 import { TextField } from '@/components/TextField'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotification } from '@/hooks/useNotification'
 import { updateProfile } from '@/services/profile.service'
 import { supabase } from '@/services/supabase'
 
 export default function ProfilePage() {
   const { user, profile, refreshProfile } = useAuth()
+  const { notify } = useNotification()
   const [fullName, setFullName] = useState(profile?.full_name ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,8 +35,11 @@ export default function ProfilePage() {
 
       await refreshProfile()
       setSuccess(true)
+      notify({ message: 'Profil muvaffaqiyatli yangilandi.', variant: 'success' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Profilni yangilashda xatolik yuz berdi')
+      const message = err instanceof Error ? err.message : 'Profilni yangilashda xatolik yuz berdi'
+      setError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setLoading(false)
     }

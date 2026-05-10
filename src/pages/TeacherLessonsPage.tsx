@@ -11,6 +11,7 @@ import { getYouTubeEmbedUrl } from '@/utils/youtube'
 import { Modal } from '@/components/Modal'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { cn } from '@/utils/cn'
+import { useNotification } from '@/hooks/useNotification'
 
 function selectClassName(): string {
   return cn(
@@ -31,6 +32,7 @@ function formatWhen(iso: string): string {
 }
 
 export default function TeacherLessonsPage() {
+  const { notify } = useNotification()
   const [classes, setClasses] = useState<ClassRow[]>([])
   const [subjects, setSubjects] = useState<SubjectRow[]>([])
   const [lessons, setLessons] = useState<TeacherLessonRow[]>([])
@@ -96,8 +98,12 @@ export default function TeacherLessonsPage() {
     try {
       await deleteLesson(lessonId)
       setLessons((prev) => prev.filter((l) => l.id !== lessonId))
+      notify({ message: 'Dars o‘chirildi.', variant: 'success' })
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'O‘chirishda xatolik yuz berdi')
+      notify({
+        message: err instanceof Error ? err.message : 'O‘chirishda xatolik yuz berdi',
+        variant: 'error',
+      })
     }
   }
 

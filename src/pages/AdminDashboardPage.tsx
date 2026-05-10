@@ -33,6 +33,7 @@ import {
 } from '@/services/classSubject.service'
 import type { ClassRow, SubjectRow } from '@/types'
 import { cn } from '@/utils/cn'
+import { useNotification } from '@/hooks/useNotification'
 
 
 function displayUserClassColumn(u: RegisteredUserRow): string {
@@ -68,6 +69,7 @@ function formatDate(iso: string): string {
 
 export default function AdminDashboardPage() {
   const { profile } = useAuth()
+  const { notify } = useNotification()
 
   const [classes, setClasses] = useState<ClassRow[]>([])
   const [subjects, setSubjects] = useState<SubjectRow[]>([])
@@ -255,8 +257,11 @@ export default function AdminDashboardPage() {
       const row = await createClass(classNameInput)
       setClasses((prev) => [...prev, row].sort((a, b) => a.name.localeCompare(b.name)))
       closeClassModal()
+      notify({ message: 'Yangi sinf qo‘shildi.', variant: 'success' })
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Sinf qo‘shilmadi')
+      const message = err instanceof Error ? err.message : 'Sinf qo‘shilmadi'
+      setFormError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setSubmitting(false)
     }
@@ -276,8 +281,11 @@ export default function AdminDashboardPage() {
         return next
       })
       await loadRegisteredUsers()
+      notify({ message: 'O‘quvchining sinfi saqlandi.', variant: 'success' })
     } catch (e) {
-      setAssignClassError(e instanceof Error ? e.message : 'Sinf biriktirilmadi')
+      const message = e instanceof Error ? e.message : 'Sinf biriktirilmadi'
+      setAssignClassError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setAssigningId(null)
     }
@@ -298,8 +306,11 @@ export default function AdminDashboardPage() {
     try {
       await adminSetTeacherSubjects(tsTeacherId, tsSubjectIds)
       await loadRegisteredUsers()
+      notify({ message: 'O‘qituvchi fanlari saqlandi.', variant: 'success' })
     } catch (e) {
-      setTsError(e instanceof Error ? e.message : 'Fanlar saqlanmadi')
+      const message = e instanceof Error ? e.message : 'Fanlar saqlanmadi'
+      setTsError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setTsSaving(false)
     }
@@ -320,8 +331,11 @@ export default function AdminDashboardPage() {
     try {
       await adminSetClassSubjects(csClassId, csSubjectIds)
       await loadAll()
+      notify({ message: 'Sinf fanlari saqlandi.', variant: 'success' })
     } catch (e) {
-      setCsError(e instanceof Error ? e.message : 'Fanlar saqlanmadi')
+      const message = e instanceof Error ? e.message : 'Fanlar saqlanmadi'
+      setCsError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setCsSaving(false)
     }
@@ -349,8 +363,11 @@ export default function AdminDashboardPage() {
         return next
       })
       await loadRegisteredUsers()
+      notify({ message: 'Foydalanuvchi roli yangilandi.', variant: 'success' })
     } catch (e) {
-      setSaveRoleError(e instanceof Error ? e.message : 'Rol saqlanmadi')
+      const message = e instanceof Error ? e.message : 'Rol saqlanmadi'
+      setSaveRoleError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setRoleSavingId(null)
     }
@@ -396,8 +413,11 @@ export default function AdminDashboardPage() {
       const row = await createSubject(subjectNameInput)
       setSubjects((prev) => [...prev, row].sort((a, b) => a.name.localeCompare(b.name)))
       closeSubjectModal()
+      notify({ message: 'Yangi fan qo‘shildi.', variant: 'success' })
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Fan qo‘shilmadi')
+      const message = err instanceof Error ? err.message : 'Fan qo‘shilmadi'
+      setFormError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setSubmitting(false)
     }
@@ -430,8 +450,11 @@ export default function AdminDashboardPage() {
         ),
       )
       cancelEditClass()
+      notify({ message: 'Sinf tahrirlandi.', variant: 'success' })
     } catch (e) {
-      setCatalogActionError(e instanceof Error ? e.message : 'Sinf saqlanmadi')
+      const message = e instanceof Error ? e.message : 'Sinf saqlanmadi'
+      setCatalogActionError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setClassBusyId(null)
     }
@@ -454,8 +477,11 @@ export default function AdminDashboardPage() {
       }
       await loadAll()
       await loadRegisteredUsers()
+      notify({ message: 'Sinf o‘chirildi.', variant: 'success' })
     } catch (e) {
-      setCatalogActionError(e instanceof Error ? e.message : 'Sinf o‘chirilmadi')
+      const message = e instanceof Error ? e.message : 'Sinf o‘chirilmadi'
+      setCatalogActionError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setClassBusyId(null)
     }
@@ -488,8 +514,11 @@ export default function AdminDashboardPage() {
         ),
       )
       cancelEditSubject()
+      notify({ message: 'Fan tahrirlandi.', variant: 'success' })
     } catch (e) {
-      setCatalogActionError(e instanceof Error ? e.message : 'Fan saqlanmadi')
+      const message = e instanceof Error ? e.message : 'Fan saqlanmadi'
+      setCatalogActionError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setSubjectBusyId(null)
     }
@@ -511,8 +540,11 @@ export default function AdminDashboardPage() {
         cancelEditSubject()
       }
       await loadAll()
+      notify({ message: 'Fan o‘chirildi.', variant: 'success' })
     } catch (e) {
-      setCatalogActionError(e instanceof Error ? e.message : 'Fan o‘chirilmadi')
+      const message = e instanceof Error ? e.message : 'Fan o‘chirilmadi'
+      setCatalogActionError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setSubjectBusyId(null)
     }

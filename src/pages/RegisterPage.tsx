@@ -5,6 +5,7 @@ import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { TextField } from '@/components/TextField'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotification } from '@/hooks/useNotification'
 import { useToggle } from '@/hooks/useToggle'
 import { loadOrCreateProfile } from '@/services/profile.service'
 import { supabase } from '@/services/supabase'
@@ -14,6 +15,7 @@ import { cn } from '@/utils/cn'
 
 export default function RegisterPage() {
   const { signUp } = useAuth()
+  const { notify } = useNotification()
   const navigate = useNavigate()
   const [showPassword, togglePassword] = useToggle(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,15 +39,19 @@ export default function RegisterPage() {
           throw new Error(sessionErr?.message ?? 'Ro‘yxatdan o‘tgach sessiya topilmadi')
         }
         const profile = await loadOrCreateProfile(sessionData.session.user.id)
+        notify({ message: 'Akkaunt muvaffaqiyatli yaratildi.', variant: 'success' })
         navigate(roleHomePath(profile.role), { replace: true })
       } else {
-        setInfo(
-          'Tasdiqlash havolasi elektron pochtangizga yuborildi. Pochtani tasdiqlagach kirishingiz mumkin.',
-        )
+        const message =
+          'Tasdiqlash havolasi elektron pochtangizga yuborildi. Pochtani tasdiqlagach kirishingiz mumkin.'
+        setInfo(message)
+        notify({ message, variant: 'info' })
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Xatolik yuz berdi'
-      setError(translateAppError(msg))
+      const message = translateAppError(msg)
+      setError(message)
+      notify({ message, variant: 'error' })
     } finally {
       setLoading(false)
     }

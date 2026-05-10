@@ -15,6 +15,26 @@
   #root {
     @apply min-h-dvh;
   }
+
+  button,
+  [role='button'],
+  a[href],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  select,
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'],
+  input[type='button']:disabled,
+  input[type='submit']:disabled,
+  input[type='reset']:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
 }
 
 @layer utilities {
